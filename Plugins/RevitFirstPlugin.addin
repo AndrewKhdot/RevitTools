@@ -1,0 +1,10 @@
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Name>ElementCounter</Name>
+    <Assembly>E:\makro\Start\RevitFirstPlugin\RevitFirstPlugin\bin\Debug\RevitFirstPlugin.dll</Assembly>
+    <AddInId>8D83C886-B739-4ACD-A9DB-9F9D5E6E7A0A</AddInId>
+    <FullClassName>RevitFirstPlugin.Command</FullClassName>
+    <VendorId>TEST</VendorId>
+    <VendorDescription>First plugin</VendorDescription>
+  </AddIn>
+</RevitAddIns>
