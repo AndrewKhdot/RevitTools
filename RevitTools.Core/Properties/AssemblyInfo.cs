@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
 // связанные со сборкой.
-[assembly: AssemblyTitle("RevitFirstPlugin")]
+[assembly: AssemblyTitle("RevitTools.Core")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RevitFirstPlugin")]
+[assembly: AssemblyProduct("RevitTools.Core")]
 [assembly: AssemblyCopyright("Copyright ©  2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
-[assembly: Guid("bacf7666-9d7a-463d-8c3b-2e8de7cb7f00")]
+[assembly: Guid("fb3e7ffe-8710-4f9a-98bd-085335f8d291")]
 
 // Сведения о версии сборки состоят из указанных ниже четырех значений:
 //
