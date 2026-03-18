@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RevitTools.Core.Services
 {
-    internal class RoomService
+    public class RoomService
     {
         private readonly Document _doc;
 

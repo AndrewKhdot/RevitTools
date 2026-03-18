@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Name>Change Height</Name>
+    <Assembly>E:\makro\RevitTools\RevitTools.ChangeHeight\bin\Debug\RevitTools.ChangeHeight.dll</Assembly>
+    <FullClassName>RevitTools.ChangeHeight.ChangeHeightCommand</FullClassName>
+    <VendorId>ANDREI</VendorId>
+    <VendorDescription>Revit Tools by Andrei</VendorDescription>
+  </AddIn>
+</RevitAddIns>

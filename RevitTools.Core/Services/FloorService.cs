@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RevitTools.Core.Services
 {
-    internal class FloorService
+    public class FloorService
     {
     }
 }
