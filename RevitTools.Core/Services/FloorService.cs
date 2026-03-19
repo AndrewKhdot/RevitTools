@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
+using RevitTools.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +22,7 @@ namespace RevitTools.Core.Services
         
         public double FindFullHeightRoom (RoomInfo info, IEnumerable<Floor> floors)
         {
-            Room room = _doc.GetElement(info.ElementId);
+            Room room = _doc.GetElement(info.Id) as Room;
             BoundingBoxXYZ bb = room.get_BoundingBox(null);
 			double roomTop = bb.Max.Z;				
 			double currentFloor = double.MaxValue;
@@ -27,7 +30,6 @@ namespace RevitTools.Core.Services
 				
 				BoundingBoxXYZ fbb = floor.get_BoundingBox(null);
                 
-                BoundingBoxXYZ fbb = floor.get_BoundingBox(null);
                 if (fbb == null) continue;
 	
 				bool intersectsXY =
