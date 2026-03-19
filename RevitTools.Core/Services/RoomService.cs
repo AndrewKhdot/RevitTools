@@ -18,6 +18,18 @@ namespace RevitTools.Core.Services
             _doc = doc;
         }
 
+        public List<RoomInfo> CreateRoomInfosList (List<Room> rooms)
+        {   
+            List<RoomInfo> roomInfoList = new List<RoomInfo>();
+             foreach (var room in rooms)
+                {
+                    var info = CreateRoomInfo(room);   
+                    roomInfoList.Add(info);                
+                }
+            return roomInfoList;
+
+        }
+
         public RoomInfo CreateRoomInfo(Room room)
         {
             var info = new RoomInfo(room.Id, room.Name);
@@ -37,5 +49,6 @@ namespace RevitTools.Core.Services
 
             return info;
         }
+
     }
 }

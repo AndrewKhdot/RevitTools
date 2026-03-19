@@ -27,12 +27,7 @@ namespace RevitTools.ChangeHeight
             {
                 t.Start();
 
-                foreach (var room in rooms)
-                {
-                    var info = roomService.CreateRoomInfo(room);
-
-                    // Здесь позже добавим CeilingService, FloorService и логику изменения высоты
-                }
+               
 
                 t.Commit();
             }
