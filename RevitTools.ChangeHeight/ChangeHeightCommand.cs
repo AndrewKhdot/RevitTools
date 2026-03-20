@@ -17,8 +17,10 @@ namespace RevitTools.ChangeHeight
             // Создаём сервисы
             var roomService = new RoomService(doc);
             var floorService = new FloorService(doc);
+            var ceilinService =  new CeilingService(doc);
             var floors = floorService.GetFloors();
-            var rooms = roomService.GetRooms();      
+            var rooms = roomService.GetRooms();
+            var ceilings = ceilinService.GetCelings();      
             var roomInfoList = roomService.CreateRoomInfosList(rooms);
 
             foreach (var roomInfo in roomInfoList)
@@ -39,6 +41,11 @@ namespace RevitTools.ChangeHeight
 
                 t.Commit();
             }
+
+            var roomCeilingList = ceilinService.FindCeilingsForRoom();
+            roomService.ApplyCeilingsInRooms(roomCeilingList, roomInfoList);
+            
+
 
             return Result.Succeeded;
         }

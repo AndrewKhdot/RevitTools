@@ -126,7 +126,7 @@ namespace MyMacros
 		}
 		public void PutSlabBottomElevationByCeiling()
 		{	
-				    if (Ceilings.Count == 0)
+			if (Ceilings.Count == 0)
 	        return;
 		
 		    double maxArea = double.MinValue;

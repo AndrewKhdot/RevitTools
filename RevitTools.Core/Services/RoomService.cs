@@ -76,5 +76,27 @@ namespace RevitTools.Core.Services
                 }
         }
 
+        public void ApplyCeilingsInRooms (Dictionary<ElementId, List<Ceiling>> roomCeilingList, List<RoomInfo> roomInfoList)
+        {
+
+            foreach (var pair in roomCeilingList)
+            {
+                var roomId = pair.Key;
+                var ceilings = pair.Value;
+
+                // Ищем RoomInfo с таким Id
+                var roomInfo = roomInfoList.FirstOrDefault(r => r.Id == roomId);
+                if (roomInfo == null)
+                    continue;
+
+                // Переносим Id потолков
+                roomInfo.CeilingIds = ceilings
+                    .Select(c => c.Id)
+                    .ToList();
+            }
+
+        }
+
+
     }
 }
