@@ -30,9 +30,25 @@ namespace RevitTools.Core.Services
 
         }
 
+        public List<Room> GetRooms ()
+        {   
+            var rooms = new FilteredElementCollector(_doc)
+                .OfCategory(BuiltInCategory.OST_Rooms)
+                .WhereElementIsNotElementType()
+                .Cast<Room>()
+                .ToList();
+            return rooms;
+
+        }
+
+        public Room GetRoom(ElementId id)
+        {
+            return  _doc.GetElement(id) as Room;
+        }
+
         public RoomInfo CreateRoomInfo(Room room)
         {
-            var info = new RoomInfo(room.Id, room.Name);
+            var info = new RoomInfo(room.Id, room.Name, room.Number);
 
             // Уровень
             info.LevelId = room.LevelId;
@@ -48,6 +64,16 @@ namespace RevitTools.Core.Services
             // info.CeilingIds = ...
 
             return info;
+        }
+
+        public void ApplyRoomOffset (RoomInfo roomInfo)
+        {
+            Room room = GetRoom(roomInfo.Id);
+            Parameter upperOffset = room.get_Parameter(BuiltInParameter.ROOM_UPPER_OFFSET);
+                if (!upperOffset.IsReadOnly)
+                {
+                    upperOffset.Set(roomInfo.SlabBottomElevation);
+                }
         }
 
     }

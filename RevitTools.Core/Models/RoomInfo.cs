@@ -7,6 +7,7 @@ namespace RevitTools.Core.Models
     {
         public ElementId Id { get; set; }
         public string Name { get; set; }
+        public string Number { get; set; }
 
         public double StartHeight { get; set; }
         public double SlabBottomElevation { get; set; }
@@ -21,10 +22,11 @@ namespace RevitTools.Core.Models
 
         public RoomInfo() { }
 
-        public RoomInfo(ElementId id, string name)
+        public RoomInfo(ElementId id, string name, string number)
         {
             Id = id;
             Name = name;
+            Number = number;
         }
     }
 }

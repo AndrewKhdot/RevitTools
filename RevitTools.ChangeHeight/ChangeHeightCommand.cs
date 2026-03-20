@@ -16,18 +16,26 @@ namespace RevitTools.ChangeHeight
 
             // Создаём сервисы
             var roomService = new RoomService(doc);
+            var floorService = new FloorService(doc);
+            var floors = floorService.GetFloors();
+            var rooms = roomService.GetRooms();      
+            var roomInfoList = roomService.CreateRoomInfosList(rooms);
 
-            // Получаем помещения
-            var rooms = new FilteredElementCollector(doc)
-                .OfCategory(BuiltInCategory.OST_Rooms)
-                .WhereElementIsNotElementType()
-                .Cast<Room>();
+            foreach (var roomInfo in roomInfoList)
+            {
+                roomInfo.SlabBottomElevation = floorService.FindFullHeightRoom(roomInfo, floors);
+            }
 
-            using (var t = new Transaction(doc, "Change Room Height"))
+
+
+            using (var t = new Transaction(doc, "Change Room Height First Time For Looking For Ceilings"))
             {
                 t.Start();
-
-               
+                
+               foreach (var roomInfo in roomInfoList)
+               {
+                roomService.ApplyRoomOffset(roomInfo);
+               }
 
                 t.Commit();
             }
