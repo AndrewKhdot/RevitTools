@@ -20,7 +20,7 @@ namespace RevitTools.ChangeHeight
             var ceilinService =  new CeilingService(doc);
             var floors = floorService.GetFloors();
             var rooms = roomService.GetRooms();
-            var ceilings = ceilinService.GetCelings();      
+            var ceilings = ceilinService.GetCeilings();      
             var roomInfoList = roomService.CreateRoomInfosList(rooms);
 
             foreach (var roomInfo in roomInfoList)
@@ -44,7 +44,8 @@ namespace RevitTools.ChangeHeight
 
             var roomCeilingList = ceilinService.FindCeilingsForRoom();
             roomService.ApplyCeilingsInRooms(roomCeilingList, roomInfoList);
-            
+            ceilinService.AttachBiggestCeilingForRoomInfo(roomInfoList);
+
 
 
             return Result.Succeeded;

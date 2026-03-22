@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using RevitTools.Core.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RevitTools.Core.Services
 {
@@ -8,24 +9,23 @@ namespace RevitTools.Core.Services
     {
 
         private readonly Document _doc;
-        private readonly RoomService _roomService;        
+        
 
-        public CeilingService(Document doc, RoomService roomService)
+        public CeilingService(Document doc)
         {
             _doc = doc;
-            _roomService = roomService;           
+            
         }
 
 
-        public List<Ceiling> GetCeilings ()
-        {   
+        public List<Ceiling> GetCeilings()
+        {
             var ceilings = new FilteredElementCollector(_doc)
-                .OfCategory(BuiltInCategory.OST_Ceilings)
-                .WhereElementIsNotElementType()
-                .Cast<Ceiling>() 
+                .OfClass(typeof(Ceiling))
+                .Cast<Ceiling>()
                 .ToList();
-            return ceilings;
 
+            return ceilings;
         }
 
         public Ceiling GetCeiling(ElementId id)
@@ -36,7 +36,7 @@ namespace RevitTools.Core.Services
         public Dictionary<ElementId, List<ElementId>> FindCeilingsForRoom()
         {
             Dictionary<ElementId, List<ElementId>> roomCeilingList = new Dictionary<ElementId, List<ElementId>>();
-            var ceilings = GetCelings();
+            var ceilings = GetCeilings();
             foreach(var ceiling in ceilings ){
                 BoundingBoxXYZ bb = ceiling.get_BoundingBox(null);
                     if (bb == null)
@@ -47,7 +47,7 @@ namespace RevitTools.Core.Services
                     XYZ center = (bb.Min + bb.Max) * 0.5;
                     
                     XYZ testPoint = center - new XYZ(0, 0, 0.1); // опускаем точку вниз
-                    Room room = _doc.GetRoomAtPoint(testPoint);
+                    Autodesk.Revit.DB.Architecture.Room room = _doc.GetRoomAtPoint(testPoint);
                     if (room == null)
                     {
                         continue;  
@@ -84,7 +84,7 @@ namespace RevitTools.Core.Services
                 return 0;
             }
 
-        public void AttachCeilingForRoomInfo (List<RoomInfo> roomInfoList)
+        public void AttachBiggestCeilingForRoomInfo (List<RoomInfo> roomInfoList)
         {
             
             foreach (var ri in roomInfoList)
@@ -94,7 +94,7 @@ namespace RevitTools.Core.Services
 		
                 double maxArea = double.MinValue;
                 ElementId biggestCeiling = null;  
-                foreach (var ceiling in Ceilings)
+                foreach (var ceiling in ri.CeilingIds)
                 {
                     double area = GetCeilingArea(ceiling);
                     if (area > maxArea)
@@ -105,7 +105,7 @@ namespace RevitTools.Core.Services
                 }
                 if (biggestCeiling == null)
                     return;
-                CurrentCeiling = biggestCeiling; 
+                ri.CurrentCeilingId = biggestCeiling; 
             }
         }
     }
