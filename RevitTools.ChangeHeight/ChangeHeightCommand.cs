@@ -1,8 +1,12 @@
-﻿using Autodesk.Revit.UI;
-using Autodesk.Revit.DB;
-using RevitTools.Core.Services;
-using System.Linq;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
+using Autodesk.Revit.UI;
+using RevitTools.Core.Models;
+using RevitTools.Core.Services;
+using RevitTools.UI;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace RevitTools.ChangeHeight
 {
@@ -22,13 +26,45 @@ namespace RevitTools.ChangeHeight
             var rooms = roomService.GetRooms();
             var ceilings = ceilinService.GetCeilings();      
             var roomInfoList = roomService.CreateRoomInfosList(rooms);
+            List<RoomInfo> roomInfoSelected = new List<RoomInfo>();
+
+
+            var levelElements = new Dictionary<ElementId, string>();
+
+            foreach (var roomInf in roomInfoList)
+            {
+                if (!levelElements.ContainsKey(roomInf.LevelId))
+                {
+                    levelElements.Add(roomInf.LevelId, roomInf.LevelName);
+                }
+            }
+            var formForLevels = new ElementSelectorForm(levelElements);
+
+            if (formForLevels.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                return Result.Cancelled;
+
+            var selectedLevels = formForLevels.SelectedElements;
+
+                foreach (var roomInfo in roomInfoList)
+                {
+                    if (selectedLevels.ContainsKey(roomInfo.LevelId))
+                    {
+                        roomInfoSelected.Add(roomInfo);
+                    }
+                }
+    
+                if (roomInfoSelected.Count == 0)
+                {
+                    MessageBox.Show("No rooms selected. Please select at least one level.");
+                    return Result.Cancelled;
+                }
+    
+                roomInfoList = roomInfoSelected;
 
             foreach (var roomInfo in roomInfoList)
             {
                 roomInfo.SlabBottomElevation = floorService.FindFullHeightRoom(roomInfo, floors);
             }
-
-
 
             using (var t = new Transaction(doc, "Change Room Height First Time For Looking For Ceilings"))
             {
@@ -45,6 +81,8 @@ namespace RevitTools.ChangeHeight
             var roomCeilingList = ceilinService.FindCeilingsForRoom();
             roomService.ApplyCeilingsInRooms(roomCeilingList, roomInfoList);
             ceilinService.AttachBiggestCeilingForRoomInfo(roomInfoList);
+
+
 
 
 

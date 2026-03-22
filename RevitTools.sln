@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTools.Core", "RevitToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTools.ChangeHeight", "RevitTools.ChangeHeight\RevitTools.ChangeHeight.csproj", "{EEDA85AD-9ACF-461B-9426-9E1B2EE5F998}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTools.UI", "RevitTools.UI\RevitTools.UI.csproj", "{B4D6D1F6-C04F-40FD-A348-EDC20C543184}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{EEDA85AD-9ACF-461B-9426-9E1B2EE5F998}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEDA85AD-9ACF-461B-9426-9E1B2EE5F998}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEDA85AD-9ACF-461B-9426-9E1B2EE5F998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4D6D1F6-C04F-40FD-A348-EDC20C543184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4D6D1F6-C04F-40FD-A348-EDC20C543184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4D6D1F6-C04F-40FD-A348-EDC20C543184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4D6D1F6-C04F-40FD-A348-EDC20C543184}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
