@@ -13,7 +13,7 @@ namespace RevitTools.Core.Services
     {
         private readonly Document _doc;
 
-        public RDuctAccessoryCollectorService(Document doc)
+        public DuctAccessoryCollectorService (Document doc)
         {
             _doc = doc;
         }
@@ -28,9 +28,9 @@ namespace RevitTools.Core.Services
                 .ToList();
         }
 
-        public List<FamilyInstance> GetFireDumpers(List<FamilyInstance> allAccessories )
+        public FamilyInstance GetAccessory(ElementId id)
         {
-            
+            return _doc.GetElement(id) as FamilyInstance;
         }
 
     }

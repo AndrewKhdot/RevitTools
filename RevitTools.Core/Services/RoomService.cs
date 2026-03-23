@@ -18,20 +18,20 @@ namespace RevitTools.Core.Services
             _doc = doc;
         }
 
-        public List<RoomInfo> CreateRoomInfosList (List<Room> rooms)
-        {   
+        public List<RoomInfo> CreateRoomInfosList(List<Room> rooms)
+        {
             List<RoomInfo> roomInfoList = new List<RoomInfo>();
-             foreach (var room in rooms)
-                {
-                    var info = CreateRoomInfo(room);   
-                    roomInfoList.Add(info);                
-                }
+            foreach (var room in rooms)
+            {
+                var info = CreateRoomInfo(room);
+                roomInfoList.Add(info);
+            }
             return roomInfoList;
 
         }
 
-        public List<Room> GetRooms ()
-        {   
+        public List<Room> GetRooms()
+        {
             var rooms = new FilteredElementCollector(_doc)
                 .OfCategory(BuiltInCategory.OST_Rooms)
                 .WhereElementIsNotElementType()
@@ -43,7 +43,7 @@ namespace RevitTools.Core.Services
 
         public Room GetRoom(ElementId id)
         {
-            return  _doc.GetElement(id) as Room;
+            return _doc.GetElement(id) as Room;
         }
 
         public Level GetLevel(ElementId id)
@@ -71,31 +71,25 @@ namespace RevitTools.Core.Services
             return info;
         }
 
-        public void ApplyRoomOffset (RoomInfo roomInfo, bool allChange = true)
+        public void ApplyRoomOffset(RoomInfo roomInfo)
         {
             Room room = GetRoom(roomInfo.Id);
             Parameter upperOffset = room.get_Parameter(BuiltInParameter.ROOM_UPPER_OFFSET);
-                if (!upperOffset.IsReadOnly)
+            if (!upperOffset.IsReadOnly)
+            {
+                if (roomInfo.WillBeChanged)
                 {
-                if (!allChange)
-                {
-                    if (roomInfo.WillBeChanged)
-                    {
-                        upperOffset.Set(roomInfo.SlabBottomElevation);
-                    }
-                    else
-                    {
-                        upperOffset.Set(roomInfo.StartHeight);
-                    }
+                    upperOffset.Set(roomInfo.SlabBottomElevation);
                 }
                 else
-                    {
-                        upperOffset.Set(roomInfo.SlabBottomElevation);
-                    }
+                {
+                    upperOffset.Set(roomInfo.StartHeight);
                 }
+
+            }
         }
 
-        public void ApplyCeilingsInRooms (Dictionary<ElementId, List<ElementId>> roomCeilingList, List<RoomInfo> roomInfoList)
+        public void ApplyCeilingsInRooms(Dictionary<ElementId, List<ElementId>> roomCeilingList, List<RoomInfo> roomInfoList)
         {
 
             foreach (var pair in roomCeilingList)
@@ -116,6 +110,18 @@ namespace RevitTools.Core.Services
 
         }
 
+        public void PrepareRoomInfoListForCeilings(List<RoomInfo> roomInfoList, Dictionary<ElementId, string> selectedRooms)
+        {
+            foreach (var roomInfo in roomInfoList)
+            {
+                if (!selectedRooms.ContainsKey(roomInfo.Id))
+                {
+                    roomInfo.WillBeChanged = false;
+                }
+                
+            }
 
+
+        }
     }
 }

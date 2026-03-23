@@ -16,25 +16,8 @@ namespace RevitTools.ChangeHeight
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             var uiDoc = commandData.Application.ActiveUIDocument;
-            var doc = uiDoc.Document;
-
+            var doc = uiDoc.Document;        
             
-            // 1. Путь к JSON (вариант 2: JSON в репозитории)
-            string jsonPath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                "Config",
-                "EquipmentCatalog.json"
-            );
-
-            // 2. Создаём сервис загрузки конфигурации
-            var configService = new ConfigService(jsonPath);
-
-            // 3. Загружаем EquipmentCatalog
-            var catalog = configService.Load();
-
-            // 4. Создаём идентификатор оборудования
-            var identifier = new EquipmentIdentifier(catalog);
-
 
             // Создаём сервисы
             var roomService = new RoomService(doc);
@@ -124,13 +107,16 @@ namespace RevitTools.ChangeHeight
             // Получаем выбранные элементы
             var selected = form.SelectedElements;
 
-            using (var t = new Transaction(doc, "Change Room Height First Time For Looking For Ceilings"))
+            roomService.PrepareRoomInfoListForCeilings( roomInfoList, selected);
+        
+
+                using (var t = new Transaction(doc, "Change Room Height First Time For Looking For Ceilings"))
             {
                 t.Start();
 
                 foreach (var roomInfo in roomInfoList)
                 {
-                    roomService.ApplyRoomOffset(roomInfo, false);
+                    roomService.ApplyRoomOffset(roomInfo);
                 }
 
                 t.Commit();

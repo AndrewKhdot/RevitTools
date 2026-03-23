@@ -12,9 +12,9 @@ namespace RevitTools.Core.Config
    
     public class EquipmentGroup
     {
-        public List<string> Circle { get; set; } = new();
-        public List<string> Rect { get; set; } = new();
-        public List<string> Other { get; set; } = new();
+        public List<string> Circle { get; set; } = new List<string>();
+        public List<string> Rect { get; set; } = new List<string>();
+        public List<string> Other { get; set; } = new List<string>();
     }
 
 }

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FB3E7FFE-8710-4F9A-98BD-085335F8D291}</ProjectGuid>
+    <ProjectGuid>{9799980A-1E35-40B1-97CF-7385E31C9F10}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RevitTools.Core</RootNamespace>
-    <AssemblyName>RevitTools.Core</AssemblyName>
+    <RootNamespace>RevitTools.DuctAccessoryAnnotation</RootNamespace>
+    <AssemblyName>RevitTools.DuctAccessoryAnnotation</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,16 +31,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="RevitAPI">
       <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPI.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="RevitAPIUI">
       <HintPath>C:\Program Files\Autodesk\Revit 2019\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,42 +48,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
-    <Compile Include="Config\EquipmentCatalog.cs" />
-    <Compile Include="Helpers\GeometryHelper.cs" />
-    <Compile Include="Helpers\ParameterHelper.cs" />
-    <Compile Include="Helpers\SpatialHelper.cs" />
-    <Compile Include="Models\RoomInfo.cs" />
-    <Compile Include="Models\SystemElements.cs" />
-    <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
+    <Compile Include="FireDamperCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\CeilingService.cs" />
-    <Compile Include="Services\ConfigService.cs" />
-    <Compile Include="Services\DuctAccessoryAnnotationService.cs" />
-    <Compile Include="Services\DuctAccessoryCollectorService.cs" />
-    <Compile Include="Services\DuctAccessoryNumberingService.cs" />
-    <Compile Include="Services\EquipmentIdentifier.cs" />
-    <Compile Include="Services\FloorService.cs" />
-    <Compile Include="Services\RoomService.cs" />
-    <Compile Include="Services\SpaceLookupService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config\EquipmentCatalog.json" />
-    <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
-    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
-    <None Include="obj\Debug\RevitTools.Core.csproj.AssemblyReference.cache" />
-    <None Include="obj\Debug\RevitTools.Core.csproj.CoreCompileInputs.cache" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="bin\Debug\RevitTools.Core.dll" />
-    <Content Include="bin\Debug\RevitTools.Core.pdb" />
-    <Content Include="obj\Debug\RevitTools.Core.csproj.FileListAbsolute.txt" />
-    <Content Include="obj\Debug\RevitTools.Core.dll" />
-    <Content Include="obj\Debug\RevitTools.Core.pdb" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="bin\Release\" />
-    <Folder Include="obj\Debug\TempPE\" />
+    <ProjectReference Include="..\RevitTools.Core\RevitTools.Core.csproj">
+      <Project>{fb3e7ffe-8710-4f9a-98bd-085335f8d291}</Project>
+      <Name>RevitTools.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RevitTools.UI\RevitTools.UI.csproj">
+      <Project>{b4d6d1f6-c04f-40fd-a348-edc20c543184}</Project>
+      <Name>RevitTools.UI</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
