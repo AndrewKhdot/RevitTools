@@ -1,0 +1,22 @@
+{
+  "FireDampers": {
+    "Circle": [
+      "DKIR1"
+    ],
+    "Rect": [
+      "FDS"
+    ],
+    "Other": []
+  },
+
+  "SoundAttenuators": {
+    "Circle": [
+      "CA",
+      "CS"
+    ],
+    "Rect": [
+      "MS"
+    ],
+    "Other": []
+  }
+}

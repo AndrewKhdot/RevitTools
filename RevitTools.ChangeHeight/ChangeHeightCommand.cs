@@ -18,6 +18,24 @@ namespace RevitTools.ChangeHeight
             var uiDoc = commandData.Application.ActiveUIDocument;
             var doc = uiDoc.Document;
 
+            
+            // 1. Путь к JSON (вариант 2: JSON в репозитории)
+            string jsonPath = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "Config",
+                "EquipmentCatalog.json"
+            );
+
+            // 2. Создаём сервис загрузки конфигурации
+            var configService = new ConfigService(jsonPath);
+
+            // 3. Загружаем EquipmentCatalog
+            var catalog = configService.Load();
+
+            // 4. Создаём идентификатор оборудования
+            var identifier = new EquipmentIdentifier(catalog);
+
+
             // Создаём сервисы
             var roomService = new RoomService(doc);
             var floorService = new FloorService(doc);
