@@ -46,6 +46,11 @@ namespace RevitTools.Core.Services
             return  _doc.GetElement(id) as Room;
         }
 
+        public Level GetLevel(ElementId id)
+        {
+            return _doc.GetElement(id) as Level;
+        }
+
         public RoomInfo CreateRoomInfo(Room room)
         {
             var info = new RoomInfo(room.Id, room.Name, room.Number);
@@ -62,17 +67,31 @@ namespace RevitTools.Core.Services
 
             // Пока потолки не ищем — это будет в CeilingService
             // info.CeilingIds = ...
-
+            info.WillBeChanged = true;
             return info;
         }
 
-        public void ApplyRoomOffset (RoomInfo roomInfo)
+        public void ApplyRoomOffset (RoomInfo roomInfo, bool allChange = true)
         {
             Room room = GetRoom(roomInfo.Id);
             Parameter upperOffset = room.get_Parameter(BuiltInParameter.ROOM_UPPER_OFFSET);
                 if (!upperOffset.IsReadOnly)
                 {
-                    upperOffset.Set(roomInfo.SlabBottomElevation);
+                if (!allChange)
+                {
+                    if (roomInfo.WillBeChanged)
+                    {
+                        upperOffset.Set(roomInfo.SlabBottomElevation);
+                    }
+                    else
+                    {
+                        upperOffset.Set(roomInfo.StartHeight);
+                    }
+                }
+                else
+                    {
+                        upperOffset.Set(roomInfo.SlabBottomElevation);
+                    }
                 }
         }
 

@@ -82,7 +82,41 @@ namespace RevitTools.ChangeHeight
             roomService.ApplyCeilingsInRooms(roomCeilingList, roomInfoList);
             ceilinService.AttachBiggestCeilingForRoomInfo(roomInfoList);
 
+            var roomElements = new Dictionary<ElementId, string>();
 
+            foreach (var roomInf in roomInfoList)
+            {
+
+                double height = (roomInf.SlabBottomElevation - roomService.GetLevel(roomInf.LevelId).Elevation) * 0.3048;
+
+                string roomHeader = roomInf.Number + " " + roomInf.Name + " – " + roomInf.LevelName + " - " + height.ToString();
+                roomElements.Add(roomInf.Id, roomHeader);
+            }
+
+            var form = new ElementSelectorForm(roomElements);
+
+            if (form.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                {
+                foreach (var roomInfo in roomInfoList)
+                    {
+                        roomInfo.WillBeChanged = false;
+                    }
+                }
+
+            // Получаем выбранные элементы
+            var selected = form.SelectedElements;
+
+            using (var t = new Transaction(doc, "Change Room Height First Time For Looking For Ceilings"))
+            {
+                t.Start();
+
+                foreach (var roomInfo in roomInfoList)
+                {
+                    roomService.ApplyRoomOffset(roomInfo, false);
+                }
+
+                t.Commit();
+            }
 
 
 
