@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace RevitTools.DuctAccessoryAnnotation
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    public class ChangeHeightCommand : IExternalCommand
+    public class FireDampersCommand : IExternalCommand
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -21,25 +21,23 @@ namespace RevitTools.DuctAccessoryAnnotation
             var doc = uiDoc.Document;
 
 
-            // 1. Путь к JSON (вариант 2: JSON в репозитории)
+            
+        // Загрузка каталога
             string jsonPath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 "Config",
                 "EquipmentCatalog.json"
             );
 
-            // 2. Создаём сервис загрузки конфигурации
-            var configService = new ConfigService(jsonPath);
+            var config = new ConfigService(jsonPath).Load();
+            var identifier = new EquipmentIdentifier(config);
 
-            // 3. Загружаем EquipmentCatalog
-            var catalog = configService.Load();
+            var collector = new DuctAccessoryCollectorService(doc);
+            var filtering = new FilteringAccessoryService(doc, identifier);
 
-            // 4. Создаём идентификатор оборудования
-            var identifier = new EquipmentIdentifier(catalog);
+            var allAccessories = collector.GetAccessories();
+            var dampers = filtering.FilterFireDampers(allAccessories);
 
-
-            // Создаём сервисы
-            var roomService = new RoomService(doc);
             
             return Result.Succeeded;
         }

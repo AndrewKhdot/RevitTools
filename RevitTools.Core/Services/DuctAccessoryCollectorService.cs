@@ -13,9 +13,11 @@ namespace RevitTools.Core.Services
     {
         private readonly Document _doc;
 
+
         public DuctAccessoryCollectorService (Document doc)
         {
             _doc = doc;
+
         }
 
         
@@ -31,7 +33,7 @@ namespace RevitTools.Core.Services
         public FamilyInstance GetAccessory(ElementId id)
         {
             return _doc.GetElement(id) as FamilyInstance;
-        }
+        }        
 
     }
 }
