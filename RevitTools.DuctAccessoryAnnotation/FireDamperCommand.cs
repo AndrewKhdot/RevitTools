@@ -28,7 +28,7 @@ namespace RevitTools.DuctAccessoryAnnotation
                 "Config",
                 "EquipmentCatalog.json"
             );
-
+            const string paramName = "MC Object Variable 1";
             var config = new ConfigService(jsonPath).Load();
             var identifier = new EquipmentIdentifier(config);
 
@@ -36,8 +36,19 @@ namespace RevitTools.DuctAccessoryAnnotation
             var filtering = new FilteringAccessoryService(doc, identifier);
 
             var allAccessories = collector.GetAccessories();
-            var dampers = filtering.FilterFireDampers(allAccessories);
+            var fireDampers = filtering.FilterFireDampers(allAccessories);
+            
+            // 1. Собираем уже используемые номера
+            List<int> used = numbering.ExtractUsedNumbers(fireDampers, paramName);
 
+            // 2. Создаём NumberPool
+            var pool = new NumberPool(used);
+
+            // 3. Нумеруем
+            numbering.PutNumbers(fireDampers, pool, paramName);
+
+            // 4. Аннотируем
+            annotationService.Annotate(fireDampers);
             
             return Result.Succeeded;
         }
