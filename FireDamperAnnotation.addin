@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Name>FireDamperAnnotation</Name>
+    <AddInId>25ceb610-1b38-4a74-9b98-a8eb7918b9f0</AddInId>
+    <Assembly>:\makro\RevitTools\RevitTools.DuctAccessoryAnnotation\obj\Debug\RevitTools.FireDamperAnnotation.dll</Assembly>
+    <FullClassName>RevitTools.DuctAccessoryAnnotation.FireDamperAnnotationCommand</FullClassName>
+    <VendorId>RT</VendorId>
+    <VendorDescription>Revit Tools</VendorDescription>
+  </AddIn>
+</RevitAddIns>

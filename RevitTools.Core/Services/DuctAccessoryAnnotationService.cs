@@ -1,30 +1,40 @@
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
 using System.Collections.Generic;
 
 namespace RevitTools.Core.Services
 {
     public class DuctAccessoryAnnotationService
     {
-        private readonly EquipmentIdentifier _identifier;
-        public DuctAccessoryAnnotationService (Document doc, EquipmentIdentifier identifier)
+        const string paramFireDampTypeAndSize = "MC Object Variable 2";
+        const string paramFireDamPlace = "MC Object Variable 3";
+        private readonly DuctAccessoryInfoService _infoservice;
+        private readonly SpaceLookupService _spaceLookupService;
+
+        public DuctAccessoryAnnotationService (DuctAccessoryInfoService infoservice, SpaceLookupService spaceLookupService)
         {
-            
-            _identifier = identifier;
+
+            _infoservice = infoservice;
+            _spaceLookupService = spaceLookupService;
         }
-        public void FireDampersAnnotation(List<FamilyInstance> elements, NumberPool pool, string paramName)
+        public void FireDampersAnnotation(List<FamilyInstance> elements)
         {
+
             foreach (var elem in elements)
             {
-                var param = elem.LookupParameter(paramName);
+                var param = elem.LookupParameter(paramFireDampTypeAndSize);
                 if (param == null || param.IsReadOnly)
+                    continue;             
+                param.Set(_infoservice.GetFireDamperSize(elem));
+
+                var paramTwo = elem.LookupParameter(paramFireDamPlace);
+                if (paramTwo == null || paramTwo.IsReadOnly)
                     continue;
-
-                string val = param.AsString();
-                if (!string.IsNullOrEmpty(val))
-                    continue; // номер уже есть
-
-                int next = pool.GetNext();
-                param.Set(next.ToString());
+                Space spase = _spaceLookupService.GetSpaceFor(elem);
+                if (spase == null)
+                    continue;
+                string spaceInfo = $"{spase.Number} {spase.Name}";
+                paramTwo.Set(spaceInfo);
             }
         }
 

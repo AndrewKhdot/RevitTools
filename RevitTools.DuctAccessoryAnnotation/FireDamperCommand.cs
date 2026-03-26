@@ -29,7 +29,7 @@ namespace RevitTools.DuctAccessoryAnnotation
                 "Config",
                 "EquipmentCatalog.json"
             );
-            const string paramName = "MC Object Variable 1";
+            const string paramNumber = "MC Object Variable 1";
             var config = new ConfigService(jsonPath).Load();
             var identifier = new EquipmentIdentifier(config);
 
@@ -39,20 +39,31 @@ namespace RevitTools.DuctAccessoryAnnotation
             var allAccessories = collector.GetAccessories();
             var fireDampers = filtering.FilterFireDampers(allAccessories);
             var numbering = new DuctAccessoryNumberingService();
-            var annotationService = new DuctAccessoryAnnotationService(doc, identifier);
+            var infoService = new DuctAccessoryInfoService(doc, identifier);
+            var spaceLookup = new SpaceLookupService(doc);
+            var annotationService = new DuctAccessoryAnnotationService(infoService, spaceLookup);
             // 1. Собираем уже используемые номера
-            List<int> used = numbering.ExtractUsedNumbers(fireDampers, paramName);
+            List<int> used = numbering.ExtractUsedNumbers(fireDampers, paramNumber);
 
             // 2. Создаём NumberPool
             var pool = new NumberPool(used);
 
             // 3. Нумеруем
-
-            numbering.PutNumbers(fireDampers, pool, paramName);
+            using (var t = new Transaction(doc, "Set firedumpes numbers"))
+            {
+                t.Start();
+                numbering.PutNumbers(fireDampers, pool, paramNumber);
+                t.Commit();
+            }
 
             // 4. Аннотируем
-            //annotationService.Annotate(fireDampers);
-            
+            using (var t = new Transaction(doc, "Set firedumpes names"))
+            {
+                t.Start();
+                annotationService.FireDampersAnnotation(fireDampers);
+                t.Commit();
+            }
+
             return Result.Succeeded;
         }
     }
