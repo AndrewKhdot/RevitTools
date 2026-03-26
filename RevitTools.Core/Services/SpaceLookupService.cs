@@ -1,3 +1,6 @@
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
+
 public class SpaceLookupService
 {
     private readonly Document _doc;

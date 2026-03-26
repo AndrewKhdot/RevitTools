@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RevitTools.Core.Services
 {
-    public class NumberingService
+    public class DuctAccessoryNumberingService
     {
         public void PutNumbers(List<FamilyInstance> elements, NumberPool pool, string paramName)
         {

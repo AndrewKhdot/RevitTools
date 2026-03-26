@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using RevitTools.Core.Models;
 using RevitTools.Core.Services;
+using RevitTools.Revit.Services;
 using RevitTools.UI;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,8 @@ namespace RevitTools.DuctAccessoryAnnotation
 
             var allAccessories = collector.GetAccessories();
             var fireDampers = filtering.FilterFireDampers(allAccessories);
-            
+            var numbering = new DuctAccessoryNumberingService();
+            var annotationService = new DuctAccessoryAnnotationService(doc, identifier);
             // 1. Собираем уже используемые номера
             List<int> used = numbering.ExtractUsedNumbers(fireDampers, paramName);
 
@@ -45,10 +47,11 @@ namespace RevitTools.DuctAccessoryAnnotation
             var pool = new NumberPool(used);
 
             // 3. Нумеруем
+
             numbering.PutNumbers(fireDampers, pool, paramName);
 
             // 4. Аннотируем
-            annotationService.Annotate(fireDampers);
+            //annotationService.Annotate(fireDampers);
             
             return Result.Succeeded;
         }

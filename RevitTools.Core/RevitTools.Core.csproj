@@ -67,7 +67,9 @@
     <Compile Include="Services\DuctAccessoryCollectorService.cs" />
     <Compile Include="Services\DuctAccessoryNumberingService.cs" />
     <Compile Include="Services\EquipmentIdentifier.cs" />
+    <Compile Include="Services\FilteringAccessoryService.cs" />
     <Compile Include="Services\FloorService.cs" />
+    <Compile Include="Services\NumberPool.cs" />
     <Compile Include="Services\RoomService.cs" />
     <Compile Include="Services\SpaceLookupService.cs" />
   </ItemGroup>
