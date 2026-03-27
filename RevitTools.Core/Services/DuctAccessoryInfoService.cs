@@ -37,5 +37,55 @@ namespace RevitTools.Core.Services
             return annotationSize;
         }
 
+        public string GetSilenserSize(FamilyInstance silenser)
+        {
+            string annotationSize = "";
+            string modelValue = "";
+            var type = _doc.GetElement(silenser.GetTypeId()) as Element;
+            if (type == null) return annotationSize;
+            if (_identifier.IsRect(type.LookupParameter("Model")?.AsString() ?? ""))
+            {
+                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
+                string[] size = modelValue.Split(new char[] { '/' });
+                string[] sizeParam = size[1].Split(new char[] { 'x' });
+                annotationSize = sizeParam[0] + "x" + sizeParam[1];
+            }
+            if (_identifier.IsCircle(type.LookupParameter("Model")?.AsString() ?? ""))
+            {
+                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
+                string[] size = modelValue.Split(new char[] { '/' });
+                string[] sizeParam = size[1].Split(new char[] { 'x' });
+                annotationSize = "⌀" + sizeParam[0];
+            }
+                return annotationSize;
+            
+
+        }
+
+        public string GetSilenserLength(FamilyInstance silenser)
+        {
+            string annotationLength = "";
+            string modelValue = "";
+            var type = _doc.GetElement(silenser.GetTypeId()) as Element;
+            if (type == null) return annotationLength;
+            if (_identifier.IsRect(type.LookupParameter("Model")?.AsString() ?? ""))
+            {
+                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
+                string[] size = modelValue.Split(new char[] { '/' });
+                string[] sizeParam = size[1].Split(new char[] { 'x' });
+                annotationLength = sizeParam[2];
+            }
+            if (_identifier.IsCircle(type.LookupParameter("Model")?.AsString() ?? ""))
+            {
+                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
+                string[] size = modelValue.Split(new char[] { '/' });
+                string[] sizeParam = size[1].Split(new char[] { 'x' });
+                annotationLength = sizeParam[1];
+            }
+            return annotationLength;
+
+
+        }
+
     }
 }
