@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="FireDamperCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SilencerAnnotationCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RevitTools.Core\RevitTools.Core.csproj">

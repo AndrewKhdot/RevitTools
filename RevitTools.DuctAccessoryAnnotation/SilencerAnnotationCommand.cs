@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace RevitTools.DuctAccessoryAnnotation
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    public class FireDampersCommand : IExternalCommand
+    public class SilencerAnnotationCommand : IExternalCommand
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -31,7 +31,7 @@ namespace RevitTools.DuctAccessoryAnnotation
                     "Config",
                     "EquipmentCatalog.json"
                 );
-                const string paramNumber = "MC Object Variable 1";
+                const string paramNumber = "MC Object Variable 4";
                 var config = new ConfigService(jsonPath).Load();
                 var identifier = new EquipmentIdentifier(config);
 
@@ -39,36 +39,35 @@ namespace RevitTools.DuctAccessoryAnnotation
                 var filtering = new FilteringAccessoryService(doc, identifier);
 
                 var allAccessories = collector.GetAccessories();
-                var fireDampers = filtering.FilterFireDampers(allAccessories);
+                var silencers = filtering.FilterSilencers(allAccessories);
                 var numbering = new DuctAccessoryNumberingService();
                 var infoService = new DuctAccessoryInfoService(doc, identifier);
                 var spaceLookup = new SpaceLookupService(doc);
                 var annotationService = new DuctAccessoryAnnotationService(infoService, spaceLookup);
                 // 1. Собираем уже используемые номера
-                List<int> used = numbering.ExtractUsedNumbers(fireDampers, paramNumber);
+                List<int> used = numbering.ExtractUsedNumbers(silencers, paramNumber);
 
                 // 2. Создаём NumberPool
                 var pool = new NumberPool(used);
 
                 // 3. Нумеруем
-                using (var t = new Transaction(doc, "Set firedumpes numbers"))
+                using (var t = new Transaction(doc, "Set silencers numbers"))
                 {
                     t.Start();
-                    numbering.PutNumbers(fireDampers, pool, paramNumber);
+                    numbering.PutNumbers(silencers, pool, paramNumber);
                     t.Commit();
                 }
 
                 // 4. Аннотируем
-                using (var t = new Transaction(doc, "Set firedumpes names"))
+                using (var t = new Transaction(doc, "Set silencers names"))
                 {
                     t.Start();
-                    annotationService.FireDampersAnnotation(fireDampers);
+                    annotationService.SilencersAnnotation(silencers);
                     t.Commit();
                 }
 
                 return Result.Succeeded;
             }
-
             catch (Exception ex)
             {
                 // Показываем ошибку пользователю
@@ -79,5 +78,6 @@ namespace RevitTools.DuctAccessoryAnnotation
                 return Result.Failed;
             }
         }
+
     }
 }

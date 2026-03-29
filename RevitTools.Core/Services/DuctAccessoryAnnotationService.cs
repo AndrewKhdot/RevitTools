@@ -8,6 +8,8 @@ namespace RevitTools.Core.Services
     {
         const string paramFireDampTypeAndSize = "MC Object Variable 2";
         const string paramFireDamPlace = "MC Object Variable 3";
+        const string paramSilencerSize = "MC Object Variable 1";
+        const string paramSilencerLength = "MC Object Variable 2";
         private readonly DuctAccessoryInfoService _infoservice;
         private readonly SpaceLookupService _spaceLookupService;
 
@@ -38,5 +40,21 @@ namespace RevitTools.Core.Services
             }
         }
 
+        public void SilencersAnnotation(List<FamilyInstance> elements)
+        {
+
+            foreach (var elem in elements)
+            {
+                var param = elem.LookupParameter(paramSilencerSize);
+                if (param == null || param.IsReadOnly)
+                    continue;
+                param.Set(_infoservice.GetSilenserSize(elem));
+
+                var paramTwo = elem.LookupParameter(paramSilencerLength);
+                if (paramTwo == null || paramTwo.IsReadOnly)
+                    continue;        
+                paramTwo.Set(_infoservice.GetSilenserLength(elem));
+            }
+        }
     }
 }
