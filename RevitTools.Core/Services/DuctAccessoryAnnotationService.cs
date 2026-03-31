@@ -42,6 +42,7 @@ namespace RevitTools.Core.Services
 
         public void SilencersAnnotation(List<FamilyInstance> elements)
         {
+            LoggingService.Log("Start annotanitionservice");
 
             foreach (var elem in elements)
             {

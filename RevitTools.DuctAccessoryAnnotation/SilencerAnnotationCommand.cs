@@ -20,6 +20,7 @@ namespace RevitTools.DuctAccessoryAnnotation
         {
             try
             {
+                LoggingService.Log("SilencerAnnotationCommand started");
                 var uiDoc = commandData.Application.ActiveUIDocument;
                 var doc = uiDoc.Document;
 
@@ -39,21 +40,25 @@ namespace RevitTools.DuctAccessoryAnnotation
                 var filtering = new FilteringAccessoryService(doc, identifier);
 
                 var allAccessories = collector.GetAccessories();
+                LoggingService.Log($"Was fonded {allAccessories.Count} asseccorries");
                 var silencers = filtering.FilterSilencers(allAccessories);
+                LoggingService.Log($"Was fonded {silencers.Count} silencers");
                 var numbering = new DuctAccessoryNumberingService();
                 var infoService = new DuctAccessoryInfoService(doc, identifier);
                 var spaceLookup = new SpaceLookupService(doc);
                 var annotationService = new DuctAccessoryAnnotationService(infoService, spaceLookup);
                 // 1. Собираем уже используемые номера
                 List<int> used = numbering.ExtractUsedNumbers(silencers, paramNumber);
-
+                LoggingService.Log($"Used numbers founded {used.Count}");
                 // 2. Создаём NumberPool
                 var pool = new NumberPool(used);
 
                 // 3. Нумеруем
                 using (var t = new Transaction(doc, "Set silencers numbers"))
                 {
+
                     t.Start();
+                    LoggingService.Log("Set silencers numbers started");
                     numbering.PutNumbers(silencers, pool, paramNumber);
                     t.Commit();
                 }
@@ -62,10 +67,11 @@ namespace RevitTools.DuctAccessoryAnnotation
                 using (var t = new Transaction(doc, "Set silencers names"))
                 {
                     t.Start();
+                    LoggingService.Log("Set silencers names started");
                     annotationService.SilencersAnnotation(silencers);
                     t.Commit();
                 }
-
+                LoggingService.Log("SilencerAnnotationCommand finished successfully");
                 return Result.Succeeded;
             }
             catch (Exception ex)

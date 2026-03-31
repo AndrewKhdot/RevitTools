@@ -1,4 +1,4 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using RevitTools.Core.Services;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +19,7 @@ namespace RevitTools.Revit.Services
         public List<FamilyInstance> FilterFireDampers(List<FamilyInstance> accessories)
         {
             var result = new List<FamilyInstance>();
+            LoggingService.Log("Start filtring firedumpers");
 
             foreach (var ac in accessories)
             {
@@ -39,14 +40,15 @@ namespace RevitTools.Revit.Services
         {
             var result = new List<FamilyInstance>();
 
+            LoggingService.Log("Start filtring silencers");
+
             foreach (var ac in accessories)
             {
                 var type = _doc.GetElement(ac.GetTypeId()) as Element;
-                if (type == null) continue;
-
-                var modelParam = type.LookupParameter("Model");
-                string code = modelParam?.AsString() ?? "";
-
+                if (type == null) continue;                
+                string[] names = { "Model", "Группа модели" };
+                var modelParam = names.Select(n => type.LookupParameter(n)).FirstOrDefault(p => p != null);
+                string code = modelParam?.AsString() ?? "";                
                 if (_identifier.IsSilencer(code))
                     result.Add(ac);
             }

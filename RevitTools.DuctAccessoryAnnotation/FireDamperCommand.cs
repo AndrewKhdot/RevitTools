@@ -20,6 +20,7 @@ namespace RevitTools.DuctAccessoryAnnotation
         {
             try
             {
+                LoggingService.Log("Start FireDampersCommand");
                 var uiDoc = commandData.Application.ActiveUIDocument;
                 var doc = uiDoc.Document;
 
@@ -39,7 +40,9 @@ namespace RevitTools.DuctAccessoryAnnotation
                 var filtering = new FilteringAccessoryService(doc, identifier);
 
                 var allAccessories = collector.GetAccessories();
+                LoggingService.Log($"All accessories {allAccessories.Count}");
                 var fireDampers = filtering.FilterFireDampers(allAccessories);
+                LoggingService.Log($"FireDumpers {fireDampers.Count}");
                 var numbering = new DuctAccessoryNumberingService();
                 var infoService = new DuctAccessoryInfoService(doc, identifier);
                 var spaceLookup = new SpaceLookupService(doc);

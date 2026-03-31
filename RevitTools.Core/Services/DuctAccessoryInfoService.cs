@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RevitTools.Core.Services
 {
@@ -40,21 +41,24 @@ namespace RevitTools.Core.Services
         public string GetSilenserSize(FamilyInstance silenser)
         {
             string annotationSize = "";
-            string modelValue = "";
             var type = _doc.GetElement(silenser.GetTypeId()) as Element;
             if (type == null) return annotationSize;
-            if (_identifier.IsRect(type.LookupParameter("Model")?.AsString() ?? ""))
+            string[] names = { "Model", "Группа модели" };
+            var modelParam = names.Select(n => type.LookupParameter(n)).FirstOrDefault(p => p != null);
+            string modelValue = modelParam?.AsString() ?? "";
+            if (_identifier.IsRect(modelValue))
             {
-                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
+                LoggingService.Log($"Model value for rec silenser: {modelValue}");
                 string[] size = modelValue.Split(new char[] { '/' });
                 string[] sizeParam = size[1].Split(new char[] { 'x' });
                 annotationSize = sizeParam[0] + "x" + sizeParam[1];
             }
-            if (_identifier.IsCircle(type.LookupParameter("Model")?.AsString() ?? ""))
+            if (_identifier.IsCircle(modelValue))
             {
-                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
+                LoggingService.Log($"Model value for cir silenser: {modelValue}");
                 string[] size = modelValue.Split(new char[] { '/' });
                 string[] sizeParam = size[1].Split(new char[] { 'x' });
+                string diameter = sizeParam[0];
                 annotationSize = "⌀" + sizeParam[0];
             }
                 return annotationSize;
@@ -65,19 +69,19 @@ namespace RevitTools.Core.Services
         public string GetSilenserLength(FamilyInstance silenser)
         {
             string annotationLength = "";
-            string modelValue = "";
             var type = _doc.GetElement(silenser.GetTypeId()) as Element;
             if (type == null) return annotationLength;
-            if (_identifier.IsRect(type.LookupParameter("Model")?.AsString() ?? ""))
+            string[] names = { "Model", "Группа модели" };
+            var modelParam = names.Select(n => type.LookupParameter(n)).FirstOrDefault(p => p != null);
+            string modelValue = modelParam?.AsString() ?? "";
+            if (_identifier.IsRect(modelValue))
             {
-                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
                 string[] size = modelValue.Split(new char[] { '/' });
                 string[] sizeParam = size[1].Split(new char[] { 'x' });
                 annotationLength = sizeParam[2];
             }
-            if (_identifier.IsCircle(type.LookupParameter("Model")?.AsString() ?? ""))
+            if (_identifier.IsCircle(modelValue))
             {
-                modelValue = type.LookupParameter("Model")?.AsString() ?? "";
                 string[] size = modelValue.Split(new char[] { '/' });
                 string[] sizeParam = size[1].Split(new char[] { 'x' });
                 annotationLength = sizeParam[1];
