@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,11 +28,10 @@ namespace RevitTools.DuctAccessoryAnnotation
 
 
                 // Загрузка каталога
-                string jsonPath = Path.Combine(
-                    AppDomain.CurrentDomain.BaseDirectory,
-                    "Config",
-                    "EquipmentCatalog.json"
-                );
+                string pluginFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+                string jsonPath = Path.Combine(pluginFolder, "Config", "EquipmentCatalog.json");
+
                 const string paramNumber = "MC Object Variable 1";
                 var config = new ConfigService(jsonPath).Load();
                 var identifier = new EquipmentIdentifier(config);
