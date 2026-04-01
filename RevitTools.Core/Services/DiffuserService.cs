@@ -76,22 +76,79 @@ namespace RevitTools.Core.Services
             var mepModel = diffuser.MEPModel;
             if (mepModel == null)
                 return false;
+
             ConnectorSet connectors = mepModel.ConnectorManager.Connectors;
 
-            if(connectors.Size != 1)
+            // Должен быть ровно один коннектор
+            if (connectors.Size != 1)
                 return false;
 
-            foreach (Connector connector in connectors)
+            Connector connector = connectors.Cast<Connector>().First();
+
+            // Проверяем цепочку до глубины 2
+            return IsConnectedToFlexRecursive(connector, 0);
+        }
+
+        private bool IsConnectedToFlexRecursive(Connector connector, int depth)
+        {
+            // Ограничиваем глубину рекурсии
+            if (depth > 1)
+                return false;
+
+            foreach (Connector refConn in connector.AllRefs)
             {
-                foreach (Connector refConn in connector.AllRefs)
+                Element owner = refConn.Owner;
+
+                // Если это FlexDuct — успех
+                if (owner is FlexDuct)
+                    return true;
+
+                // Если это Duct или переходник — продолжаем искать дальше
+                if (owner is MEPCurve || owner is FamilyInstance)
                 {
-                    var owner = refConn.Owner;
-                    if (owner is FlexDuct)
-                        return true;
+                    // Берём все коннекторы этого элемента
+                    var nextConnectors = GetConnectors(owner);
+
+                    foreach (var next in nextConnectors)
+                    {
+                        // Не возвращаемся назад по цепочке
+                        if (next.Id != refConn.Id)
+                        {
+                            if (IsConnectedToFlexRecursive(next, depth + 1))
+                                return true;
+                        }
+                    }
                 }
             }
 
             return false;
+        }
+
+        private IEnumerable<Connector> GetConnectors(Element element)
+        {
+            if (element is MEPCurve curve)
+                return curve.ConnectorManager.Connectors.Cast<Connector>();
+
+            if (element is FamilyInstance fi && fi.MEPModel != null)
+                return fi.MEPModel.ConnectorManager.Connectors.Cast<Connector>();
+
+            return Enumerable.Empty<Connector>();
+        }
+
+        public List<FamilyInstance> GetDiffusersWithFlex(List<FamilyInstance> allDiffusers)
+        {
+
+            List<FamilyInstance> filterdDiffusers = new List<FamilyInstance>();
+            foreach (var diffuser in allDiffusers)
+            {
+                if (IsConnectedToFlex(diffuser))
+                {
+                    filterdDiffusers.Add(diffuser);
+                }
+            }
+
+            return filterdDiffusers;
+
         }
 
     }

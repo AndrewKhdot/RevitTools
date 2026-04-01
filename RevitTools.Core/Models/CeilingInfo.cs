@@ -19,7 +19,7 @@ public class CeilingInfo
         Id = id;
         Box = box;
         LevelId = levelId;
-        Elevation = elevation;
+        Elevation = elevation;  
         LinkInstance = linkInstance;
         Center = (box.Min + box.Max) * 0.5;
     }
