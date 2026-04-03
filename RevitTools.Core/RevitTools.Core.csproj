@@ -73,6 +73,8 @@
     <Compile Include="Services\DuctAccessoryInfoService.cs" />
     <Compile Include="Services\FilteringAccessoryService.cs" />
     <Compile Include="Services\FloorService.cs" />
+    <Compile Include="Services\IntersectionService.cs" />
+    <Compile Include="Services\LinkedCeilingService.cs" />
     <Compile Include="Services\LinkService.cs" />
     <Compile Include="Services\LoggingService.cs" />
     <Compile Include="Services\NumberPool.cs" />

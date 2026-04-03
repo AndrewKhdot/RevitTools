@@ -71,6 +71,38 @@ namespace RevitTools.Core.Services
             return new DiffuserInfo(diffuser.Id, box, levelId);
         }
 
+        public void ExpandBoundingBoxes(List<DiffuserInfo> diffusers, double offsetFeet = 3.28084)
+        {
+            if (diffusers == null)
+                return;
+
+            foreach (var info in diffusers)
+            {
+                if (info?.Box == null)
+                    continue;
+
+                var min = info.Box.Min;
+                var max = info.Box.Max;
+
+                info.Box.Min = new XYZ(min.X, min.Y, min.Z - offsetFeet);
+                info.Box.Max = new XYZ(max.X, max.Y, max.Z + offsetFeet);
+            }
+        }
+
+        public void SetDiffusersElevation(List<DiffuserInfo> diffusers)
+        {
+            if (diffusers == null)
+                return;
+            foreach (var info in diffusers)
+            {
+                if (info.CeilingInfos.Count != 1)
+                    continue;
+                info.Elevation = info.CeilingInfos[0].Elevation;
+                info.WillBeChanged = true;
+            }
+        }
+
+
         public bool IsConnectedToFlex(FamilyInstance diffuser)
         {
             var mepModel = diffuser.MEPModel;

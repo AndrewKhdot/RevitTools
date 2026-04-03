@@ -14,6 +14,8 @@ namespace RevitTools.Core.Models
 
         public List<CeilingInfo>  CeilingInfos { get; set; } = new List<CeilingInfo>();
 
+        public bool WillBeChanged { get; set; } = false;
+
         public DiffuserInfo(ElementId id, BoundingBoxXYZ box, ElementId levelId)
         {
             Id = id;
