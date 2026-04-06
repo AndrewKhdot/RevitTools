@@ -63,12 +63,16 @@ namespace RevitTools.Core.Services
 
             // Получаем уровень
             ElementId levelId = diffuser.LevelId;
+            double elevation = 0;
             if (levelId == null || levelId == ElementId.InvalidElementId)
             {
                 levelId = diffuser.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM)?.AsElementId();
+                var level = _doc.GetElement(levelId) as Level;
+                if (level != null)
+                    elevation = level.Elevation;
             }
 
-            return new DiffuserInfo(diffuser.Id, box, levelId);
+            return new DiffuserInfo(diffuser.Id, box, levelId, elevation);
         }
 
         public void ExpandBoundingBoxes(List<DiffuserInfo> diffusers, double offsetFeet = 3.28084)

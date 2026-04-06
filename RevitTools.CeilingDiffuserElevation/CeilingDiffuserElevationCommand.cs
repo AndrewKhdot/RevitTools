@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RevitTools.ChangeHeight
+namespace RevitTools.CeilingDiffuserElevation
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     public class CeilingDiffuserElevationCommand : IExternalCommand

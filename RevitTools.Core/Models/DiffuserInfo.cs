@@ -12,17 +12,20 @@ namespace RevitTools.Core.Models
         public XYZ Center { get; }
         public ElementId LevelId { get; set; }
 
+        public double LevelZ { get; set; }
+
         public List<CeilingInfo>  CeilingInfos { get; set; } = new List<CeilingInfo>();
 
         public bool WillBeChanged { get; set; } = false;
 
-        public DiffuserInfo(ElementId id, BoundingBoxXYZ box, ElementId levelId)
+        public DiffuserInfo(ElementId id, BoundingBoxXYZ box, ElementId levelId, double levelZ)
         {
             Id = id;
             Box = box;
             LevelId = levelId;
             Center = (box.Min + box.Max) * 0.5;
             Elevation = Box.Min.Z;
+            LevelZ = levelZ;
         }
     }
 }
