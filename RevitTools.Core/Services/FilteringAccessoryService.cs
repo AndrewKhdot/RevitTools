@@ -19,7 +19,6 @@ namespace RevitTools.Revit.Services
         public List<FamilyInstance> FilterFireDampers(List<FamilyInstance> accessories)
         {
             var result = new List<FamilyInstance>();
-            LoggingService.Log("Start filtring firedumpers");
 
             foreach (var ac in accessories)
             {
@@ -30,6 +29,25 @@ namespace RevitTools.Revit.Services
                 string code = modelParam?.AsString() ?? "";
 
                 if (_identifier.IsFireDamper(code))
+                    result.Add(ac);
+            }
+
+            return result;
+        }
+
+        public List<FamilyInstance> FilterBalancingDampers(List<FamilyInstance> accessories)
+        {
+            var result = new List<FamilyInstance>();
+
+            foreach (var ac in accessories)
+            {
+                var type = _doc.GetElement(ac.GetTypeId()) as Element;
+                if (type == null) continue;
+
+                var modelParam = type.LookupParameter("MC Product Code");
+                string code = modelParam?.AsString() ?? "";
+
+                if (_identifier.IsBalancingDamper(code))
                     result.Add(ac);
             }
 

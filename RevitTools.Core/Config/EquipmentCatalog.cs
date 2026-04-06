@@ -6,6 +6,7 @@ namespace RevitTools.Core.Config
     {       
     public EquipmentGroup FireDampers { get; set; }
     public EquipmentGroup SoundAttenuators { get; set; }
+    public EquipmentGroup BalancingDampers { get; set; }
 
     }
 

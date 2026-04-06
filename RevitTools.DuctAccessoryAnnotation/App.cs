@@ -92,9 +92,15 @@ namespace RevitTools.DuctAccessoryAnnotation
                     assemblyPath,
                     "RevitTools.DuctAccessoryAnnotation.SilencerAnnotationCommand"
                 );
-
+                PushButtonData balancBtn = new PushButtonData(
+                    "BalancingDampers",
+                    "Przepustnicy",
+                    assemblyPath,
+                    "RevitTools.DuctAccessoryAnnotation.BalancingDampersCommand"
+                );
                 panel.AddItem(fireBtn);
                 panel.AddItem(silnsBtn);
+                panel.AddItem(balancBtn);
 
                 return Result.Succeeded;
             }

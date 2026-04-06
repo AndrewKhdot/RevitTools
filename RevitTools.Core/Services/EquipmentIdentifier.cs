@@ -21,6 +21,15 @@ public class EquipmentIdentifier
             return FireDamper.Any(c => code.StartsWith(c));
         }
 
+    public bool IsBalancingDamper(string code)
+    {
+        List<string> FireDamper = new List<string>();
+        FireDamper.AddRange(_cat.BalancingDampers.Circle);
+        FireDamper.AddRange(_cat.BalancingDampers.Rect);
+        FireDamper.AddRange(_cat.BalancingDampers.Other);
+        return FireDamper.Any(c => code.StartsWith(c));
+    }
+
     public bool IsSilencer(string code)
         {
             List<string> Silencer = new List<string>();

@@ -10,6 +10,7 @@ namespace RevitTools.Core.Services
         const string paramFireDamPlace = "MC Object Variable 3";
         const string paramSilencerSize = "MC Object Variable 1";
         const string paramSilencerLength = "MC Object Variable 2";
+        const string paramBalancDamPlace = "MC Object Variable 1";
         private readonly DuctAccessoryInfoService _infoservice;
         private readonly SpaceLookupService _spaceLookupService;
 
@@ -37,6 +38,22 @@ namespace RevitTools.Core.Services
                     continue;
                 string spaceInfo = $"{spase.Number} {spase.Name}";
                 paramTwo.Set(spaceInfo);
+            }
+        }
+
+        public void BalancingDampersAnnotation(List<FamilyInstance> elements)
+        {
+
+            foreach (var elem in elements)
+            {                
+                var param = elem.LookupParameter(paramBalancDamPlace);
+                if (param == null || param.IsReadOnly)
+                    continue;
+                Space spase = _spaceLookupService.GetSpaceFor(elem);
+                if (spase == null)
+                    continue;
+                string spaceInfo = $"{spase.Number} {spase.Name}";
+                param.Set(spaceInfo);
             }
         }
 

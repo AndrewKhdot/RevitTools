@@ -18,5 +18,15 @@
       "MS"
     ],
     "Other": []
+  },
+
+  "BalancingDampers": {
+    "Circle": [
+      "PTS"
+    ],
+    "Rect": [
+      "UTT/R"
+    ],
+    "Other": []
   }
 }
