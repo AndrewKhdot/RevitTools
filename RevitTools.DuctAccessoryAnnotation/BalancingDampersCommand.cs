@@ -44,7 +44,7 @@ namespace RevitTools.DuctAccessoryAnnotation
                 using (var t = new Transaction(doc, "Set balancing dampers places"))
                 {
                     t.Start();
-                    annotationService.FireDampersAnnotation(balancingDampers);
+                    annotationService.BalancingDampersAnnotation(balancingDampers);
                     t.Commit();
                 }
 
