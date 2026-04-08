@@ -11,6 +11,7 @@ namespace RevitTools.Core.Services
         const string paramSilencerSize = "MC Object Variable 1";
         const string paramSilencerLength = "MC Object Variable 2";
         const string paramBalancDamPlace = "MC Object Variable 1";
+        const string paramBalancDamMark = "MC Object Variable 2";
         private readonly DuctAccessoryInfoService _infoservice;
         private readonly SpaceLookupService _spaceLookupService;
 
@@ -47,6 +48,8 @@ namespace RevitTools.Core.Services
             foreach (var elem in elements)
             {                
                 var param = elem.LookupParameter(paramBalancDamPlace);
+                var paramTwo = elem.LookupParameter(paramBalancDamMark);
+                
                 if (param == null || param.IsReadOnly)
                     continue;
                 Space spase = _spaceLookupService.GetSpaceFor(elem);
@@ -54,6 +57,9 @@ namespace RevitTools.Core.Services
                     continue;
                 string spaceInfo = $"{spase.Number} {spase.Name}";
                 param.Set(spaceInfo);
+                if (paramTwo == null || paramTwo.IsReadOnly)
+                    continue;
+                paramTwo.Set("Przepustnica");
             }
         }
 
