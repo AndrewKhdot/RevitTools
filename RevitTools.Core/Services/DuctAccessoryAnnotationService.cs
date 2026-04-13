@@ -10,6 +10,7 @@ namespace RevitTools.Core.Services
         const string paramFireDamPlace = "MC Object Variable 3";
         const string paramSilencerSize = "MC Object Variable 1";
         const string paramSilencerLength = "MC Object Variable 2";
+        const string paramSilencerPressLost = "MC Object Variable 3";
         const string paramBalancDamPlace = "MC Object Variable 1";
         const string paramBalancDamMark = "MC Object Variable 2";
         private readonly DuctAccessoryInfoService _infoservice;
@@ -65,7 +66,6 @@ namespace RevitTools.Core.Services
 
         public void SilencersAnnotation(List<FamilyInstance> elements)
         {
-            LoggingService.Log("Start annotanitionservice");
 
             foreach (var elem in elements)
             {
@@ -78,6 +78,11 @@ namespace RevitTools.Core.Services
                 if (paramTwo == null || paramTwo.IsReadOnly)
                     continue;        
                 paramTwo.Set(_infoservice.GetSilenserLength(elem));
+
+                var paramThree = elem.LookupParameter(paramSilencerPressLost);
+                if (paramThree == null || paramThree.IsReadOnly)
+                    continue;        
+                paramThree.Set(_infoservice.GetSilenserPressureLoss(elem));
             }
         }
     }

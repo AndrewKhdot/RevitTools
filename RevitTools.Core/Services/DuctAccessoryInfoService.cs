@@ -48,14 +48,12 @@ namespace RevitTools.Core.Services
             string modelValue = modelParam?.AsString() ?? "";
             if (_identifier.IsRect(modelValue))
             {
-                LoggingService.Log($"Model value for rec silenser: {modelValue}");
                 string[] size = modelValue.Split(new char[] { '/' });
                 string[] sizeParam = size[1].Split(new char[] { 'x' });
                 annotationSize = sizeParam[0] + "x" + sizeParam[1];
             }
             if (_identifier.IsCircle(modelValue))
             {
-                LoggingService.Log($"Model value for cir silenser: {modelValue}");
                 string[] size = modelValue.Split(new char[] { '/' });
                 string[] sizeParam = size[1].Split(new char[] { 'x' });
                 string diameter = sizeParam[0];
@@ -88,8 +86,26 @@ namespace RevitTools.Core.Services
             }
             return annotationLength;
 
-
         }
+
+
+        public string GetSilenserPressureLoss(FamilyInstance silenser)
+        {
+            if (silenser == null)
+                return string.Empty;
+
+            string value = GetPressureLossParam(silenser, "TX_Δpst");
+            if (!string.IsNullOrWhiteSpace(value))
+                return value;
+
+            value = GetPressureLossParam(silenser, "TX_Static_differential_pressure");
+            if (!string.IsNullOrWhiteSpace(value))
+                return value;
+
+            return string.Empty;
+        }
+
+
 
         public string GetAccessoryConSize (FamilyInstance accessory)
         {
@@ -137,6 +153,18 @@ namespace RevitTools.Core.Services
             return (int)System.Math.Round(mm, System.MidpointRounding.AwayFromZero);
         }
 
+        private static string GetPressureLossParam(Element element, string paramName)
+        {
+            Parameter p = element.LookupParameter(paramName);
+            if (p == null || !p.HasValue)
+                return string.Empty;
+
+            // ✅ Для Double-параметров давления
+            return p.AsValueString() ?? string.Empty;
+        }
+
 
     }
+
+    
 }
