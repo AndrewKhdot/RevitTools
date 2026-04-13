@@ -91,5 +91,52 @@ namespace RevitTools.Core.Services
 
         }
 
+        public string GetAccessoryConSize (FamilyInstance accessory)
+        {
+            string sizeString = "";            
+        if (accessory.MEPModel == null)
+            return sizeString;
+
+        ConnectorSet connectors = accessory.MEPModel.ConnectorManager.Connectors;
+
+        foreach (Connector c in connectors)
+        {
+            if (c.Domain != Domain.DomainHvac)
+                continue;
+
+            if (c.Shape == ConnectorProfileType.Round)
+            {
+                double diameterFt = c.Radius * 2;
+                
+                int diameterMm = RoundMm(diameterFt);
+                sizeString =$"⌀{diameterMm}";
+
+                // диаметр присоединения
+            }
+            else if (c.Shape == ConnectorProfileType.Rectangular)
+            {
+                double widthFt = c.Width;
+                double heightFt = c.Height;
+
+                int widthMm =RoundMm(widthFt);
+                int heightMm = RoundMm(heightFt);
+                sizeString = $"{widthMm}x{heightMm}";
+                // ширина и высота присоединения
+            }
+        }
+            return sizeString;
+        }
+
+        
+        int RoundMm(double valueInFeet)
+        {
+            double mm = UnitUtils.ConvertFromInternalUnits(
+                valueInFeet,
+                DisplayUnitType.DUT_MILLIMETERS);
+
+            return (int)System.Math.Round(mm, System.MidpointRounding.AwayFromZero);
+        }
+
+
     }
 }
