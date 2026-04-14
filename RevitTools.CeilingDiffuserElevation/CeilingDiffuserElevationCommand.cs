@@ -15,13 +15,17 @@ namespace RevitTools.CeilingDiffuserElevation
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
+
             try
             {
+
                 var uiDoc = commandData.Application.ActiveUIDocument;
                 var doc = uiDoc.Document;
 
 
-                // Создаём сервисы              
+                // Создаём сервисы     
+                var ids = ElementIdLoaderHelper.LoadFromTxt(@"C:\Users\Khadatchuk\Downloads\ids.txt");
+                var highlightService = new HighlightService(doc, ids);         
 
                 var diffuserService = new DiffuserService(doc);
                 var linkedService = new LinkService(doc);
@@ -31,8 +35,38 @@ namespace RevitTools.CeilingDiffuserElevation
                 var allDiffusers = diffuserService.GetDiffusers();
                 var diffusers = diffuserService.GetDiffusersWithFlex(allDiffusers);
                 var diffuserInfos = diffuserService.CreateDiffuserInfoList(diffusers);
+
+                    using (var t = new Transaction(doc, "Show diffusers"))
+                {
+                    t.Start();
+                    foreach(var di in diffuserInfos)
+                    {
+                        highlightService.DemoBoundingBoxStep(di.Id, di.Box, $"diffuserId - {di.Id.ToString()}");
+                    }  
+                    t.Commit();
+                }                  
+
                 diffuserService.ExpandBoundingBoxes(diffuserInfos);
+                    using (var t = new Transaction(doc, "Show expanded diffusers"))
+                {
+                    t.Start();
+                    foreach(var di in diffuserInfos)
+                    {
+                        highlightService.DemoBoundingBoxStep(di.Id, di.Box, $"diffuserId - {di.Id.ToString()}");
+                    }
+                    t.Commit();
+                }                  
+
                 var ceilingInfos = linkedCeilingService.GetLinkedCeilings();
+                using (var t = new Transaction(doc, "Show ceilings"))
+                {
+                    t.Start();
+                    foreach(var ci in ceilingInfos)
+                    {
+                        highlightService.DemoBoundingBoxStep(ci.Id, ci.Box, $"ceilingId - {ci.Id.ToString()}");
+                    }
+                   t.Commit();
+                }
                 intersactionService.FindIntersections(diffuserInfos, ceilingInfos);
                 diffuserService.SetDiffusersElevation(diffuserInfos);
 

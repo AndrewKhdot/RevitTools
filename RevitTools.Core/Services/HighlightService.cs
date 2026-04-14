@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System.Collections.Generic;
+using System.Linq;
+
 
 namespace RevitTools.Core.Services
 {
@@ -21,7 +23,7 @@ namespace RevitTools.Core.Services
             if (!_watchedIds.Contains(id))
                 return;
 
-            ShowBoundingBox(box, new Color(255, 0, 0));
+            ShowBoundingBox(box);
             Pause(message);
             Clear();
         }
@@ -46,50 +48,86 @@ namespace RevitTools.Core.Services
             };
         }
 
-        public void ShowBoundingBox(BoundingBoxXYZ box, Color color)
+        public void ShowBoundingBox(BoundingBoxXYZ box)
         {
             if (box == null)
                 return;
 
-            var corners = GetCorners(box);
+            Solid solid = CreateSolidFromBoundingBox(box);
 
-            using (var t = new Transaction(_doc, "Show BoundingBox"))
-            {
-                t.Start();
+            var ds = DirectShape.CreateElement(
+                _doc,
+                new ElementId(BuiltInCategory.OST_GenericModel)
+            );
 
-                var ds = DirectShape.CreateElement(_doc, new ElementId(BuiltInCategory.OST_GenericModel));
-                ds.SetName("TempBoundingBox");
+            ds.SetName("TempBoundingBoxSolid");
+            ds.SetShape(new List<GeometryObject> { solid });
 
-                var geomList = new List<GeometryObject>();
+            ApplyGreenTransparentOverride(ds.Id);
 
-                geomList.Add(Line.CreateBound(corners[0], corners[1]));
-                geomList.Add(Line.CreateBound(corners[1], corners[2]));
-                geomList.Add(Line.CreateBound(corners[2], corners[3]));
-                geomList.Add(Line.CreateBound(corners[3], corners[0]));
-
-                geomList.Add(Line.CreateBound(corners[4], corners[5]));
-                geomList.Add(Line.CreateBound(corners[5], corners[6]));
-                geomList.Add(Line.CreateBound(corners[6], corners[7]));
-                geomList.Add(Line.CreateBound(corners[7], corners[4]));
-
-                geomList.Add(Line.CreateBound(corners[0], corners[4]));
-                geomList.Add(Line.CreateBound(corners[1], corners[5]));
-                geomList.Add(Line.CreateBound(corners[2], corners[6]));
-                geomList.Add(Line.CreateBound(corners[3], corners[7]));
-
-                ds.SetShape(geomList);
-
-                OverrideGraphicSettings ogs = new OverrideGraphicSettings();
-                ogs.SetProjectionLineColor(color);
-
-                var view = _doc.ActiveView;
-                view.SetElementOverrides(ds.Id, ogs);
-
-                _tempShapes.Add(ds.Id);
-
-                t.Commit();
-            }
+            _tempShapes.Add(ds.Id);
         }
+
+        private Solid CreateSolidFromBoundingBox(BoundingBoxXYZ box)
+        {
+            Transform tr = box.Transform;
+
+            XYZ min = tr.OfPoint(box.Min);
+            XYZ max = tr.OfPoint(box.Max);
+
+            var p0 = new XYZ(min.X, min.Y, min.Z);
+            var p1 = new XYZ(max.X, min.Y, min.Z);
+            var p2 = new XYZ(max.X, max.Y, min.Z);
+            var p3 = new XYZ(min.X, max.Y, min.Z);
+
+            var loop = CurveLoop.Create(new List<Curve>
+            {
+                Line.CreateBound(p0, p1),
+                Line.CreateBound(p1, p2),
+                Line.CreateBound(p2, p3),
+                Line.CreateBound(p3, p0)
+            });
+
+            double height = max.Z - min.Z;
+
+            return GeometryCreationUtilities.CreateExtrusionGeometry(
+                new List<CurveLoop> { loop },
+                XYZ.BasisZ,
+                height
+            );
+        }
+
+        private void ApplyGreenTransparentOverride(ElementId id)
+        {
+            var ogs = new OverrideGraphicSettings();
+
+            ogs.SetSurfaceForegroundPatternColor(
+                new Color(0, 255, 0)
+            );
+
+            ogs.SetSurfaceTransparency(70);
+
+            ElementId solidFillId = GetSolidFillPatternId();
+            if (solidFillId != ElementId.InvalidElementId)
+            {
+                ogs.SetSurfaceForegroundPatternId(solidFillId);
+            }
+
+            _doc.ActiveView.SetElementOverrides(id, ogs);
+        }
+
+        private ElementId GetSolidFillPatternId()
+        {
+            var solidFill = new FilteredElementCollector(_doc)
+                .OfClass(typeof(FillPatternElement))
+                .Cast<FillPatternElement>()
+                .FirstOrDefault(fp =>
+                    fp.GetFillPattern().IsSolidFill
+                );
+
+            return solidFill?.Id ?? ElementId.InvalidElementId;
+        }
+
 
         public void Pause(string message = "Press Continue to proceed")
         {
@@ -104,9 +142,7 @@ namespace RevitTools.Core.Services
             if (_tempShapes.Count == 0)
                 return;
 
-            using (var t = new Transaction(_doc, "Clear Highlights"))
-            {
-                t.Start();
+
 
                 foreach (var id in _tempShapes)
                 {
@@ -117,8 +153,6 @@ namespace RevitTools.Core.Services
 
                 _tempShapes.Clear();
 
-                t.Commit();
-            }
         }
     }
 }
