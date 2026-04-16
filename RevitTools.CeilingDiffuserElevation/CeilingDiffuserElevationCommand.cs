@@ -18,15 +18,18 @@ namespace RevitTools.CeilingDiffuserElevation
 
             try
             {
-
+                //LogWindowManager.Show();                             
+                
                 var uiDoc = commandData.Application.ActiveUIDocument;
                 var doc = uiDoc.Document;
 
 
                 // Создаём сервисы     
                 var ids = ElementIdLoaderHelper.LoadFromTxt(@"C:\Users\Khadatchuk\Downloads\ids.txt");
-                var highlightService = new HighlightService(doc, ids);         
-
+                // var highlightService = new HighlightService(doc, ids);       
+                // highlightService.Pause();
+                // LoggingService.Log("Plugin execution started.");
+                // highlightService.Pause();
                 var diffuserService = new DiffuserService(doc);
                 var linkedService = new LinkService(doc);
                 var linkedCeilingService = new LinkedCeilingService(doc, linkedService);
@@ -35,41 +38,39 @@ namespace RevitTools.CeilingDiffuserElevation
                 var allDiffusers = diffuserService.GetDiffusers();
                 var diffusers = diffuserService.GetDiffusersWithFlex(allDiffusers);
                 var diffuserInfos = diffuserService.CreateDiffuserInfoList(diffusers);
+                
+                // LoggingService.Log("Searching for air terminals connected via flexible ducts.");
 
-                    using (var t = new Transaction(doc, "Show diffusers"))
-                {
-                    t.Start();
-                    foreach(var di in diffuserInfos)
-                    {
-                        highlightService.DemoBoundingBoxStep(di.Id, di.Box, $"diffuserId - {di.Id.ToString()}");
-                    }  
-                    t.Commit();
-                }                  
+                // foreach(var di in diffuserInfos)
+                // {
 
+                //     highlightService.DemoBoundingBoxStep(di.Id, di.Box, $"diffuserId - {di.Id.ToString()}");
+                // }  
+ 
                 diffuserService.ExpandBoundingBoxes(diffuserInfos);
-                    using (var t = new Transaction(doc, "Show expanded diffusers"))
-                {
-                    t.Start();
-                    foreach(var di in diffuserInfos)
-                    {
-                        highlightService.DemoBoundingBoxStep(di.Id, di.Box, $"diffuserId - {di.Id.ToString()}");
-                    }
-                    t.Commit();
-                }                  
+
+                // LoggingService.Log("Expanding air terminal bounding boxes.");
+
+                // foreach(var di in diffuserInfos)
+                // {
+                //     highlightService.DemoBoundingBoxStep(di.Id, di.Box, $"diffuserId - {di.Id.ToString()}");
+                // }
+              
 
                 var ceilingInfos = linkedCeilingService.GetLinkedCeilings();
-                using (var t = new Transaction(doc, "Show ceilings"))
-                {
-                    t.Start();
-                    foreach(var ci in ceilingInfos)
-                    {
-                        highlightService.DemoBoundingBoxStep(ci.Id, ci.Box, $"ceilingId - {ci.Id.ToString()}");
-                    }
-                   t.Commit();
-                }
+
+                // LoggingService.Log("Searching for suspended ceilings.");
+
+                // foreach(var ci in ceilingInfos)
+                // {
+                //     highlightService.DemoBoundingBoxStep(ci.Id, ci.Box, $"ceilingId - {ci.Id.ToString()}");
+                // }
+                // LoggingService.Log("Detecting intersections and assigning ceilings to air terminals.");
+                // highlightService.Pause();
                 intersactionService.FindIntersections(diffuserInfos, ceilingInfos);
                 diffuserService.SetDiffusersElevation(diffuserInfos);
-
+                // LoggingService.Log("Setting air terminal elevations based on ceiling heights.");
+                // highlightService.Pause();
                 using (var t = new Transaction(doc, "Update diffusers elevation"))
                 {
                     t.Start();
@@ -92,6 +93,7 @@ namespace RevitTools.CeilingDiffuserElevation
 
                     t.Commit();
                 }
+                // LoggingService.Log("Plugin execution completed.");
                 return Result.Succeeded;
 
             }

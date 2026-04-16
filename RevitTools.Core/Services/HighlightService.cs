@@ -22,10 +22,25 @@ namespace RevitTools.Core.Services
         {
             if (!_watchedIds.Contains(id))
                 return;
+        
+            using (var t = new Transaction(_doc, "Show BoundingBox"))
+            {
+                t.Start();
 
-            ShowBoundingBox(box);
-            Pause(message);
-            Clear();
+                ShowBoundingBox(box);
+
+                t.Commit(); // 🔥 ТОЛЬКО ЗДЕСЬ Revit отрисует Solid
+            }
+                Pause(message);
+            
+            // 3️⃣ Очистка
+            using (var t = new Transaction(_doc, "Clear BoundingBox"))
+            {
+                t.Start();
+                Clear();
+                t.Commit();
+            }  
+           
         }
 
 
@@ -104,7 +119,6 @@ namespace RevitTools.Core.Services
             ogs.SetSurfaceForegroundPatternColor(
                 new Color(0, 255, 0)
             );
-
             ogs.SetSurfaceTransparency(70);
 
             ElementId solidFillId = GetSolidFillPatternId();
