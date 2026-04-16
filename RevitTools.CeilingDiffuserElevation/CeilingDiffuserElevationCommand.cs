@@ -24,7 +24,7 @@ namespace RevitTools.CeilingDiffuserElevation
 
 
                 // Создаём сервисы     
-                var ids = ElementIdLoaderHelper.LoadFromTxt(@"C:\Users\Khadatchuk\Downloads\ids.txt");
+                var ids = ElementIdLoaderHelper.LoadFromTxt(@"E:\makro\RevitTools\RevitTools.Core\Config\ids.txt");
                 var highlightService = new HighlightService(doc, ids);         
 
                 var diffuserService = new DiffuserService(doc);

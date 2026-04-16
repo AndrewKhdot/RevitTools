@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\EquipmentCatalog.cs" />
+    <Compile Include="Helpers\ElementIdLoaderHelper.cs" />
     <Compile Include="Helpers\GeometryHelper.cs" />
     <Compile Include="Helpers\ParameterHelper.cs" />
     <Compile Include="Helpers\SpatialHelper.cs" />
