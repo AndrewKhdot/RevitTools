@@ -30,7 +30,8 @@ namespace RevitTools.CeilingDiffuserElevation
                 // highlightService.Pause();
                 // LoggingService.Log("Plugin execution started.");
                 // highlightService.Pause();
-                var diffuserService = new DiffuserService(doc);
+                var connectivityService = new MepConnectivityService();
+                var diffuserService = new DiffuserService(doc, connectivityService);
                 var linkedService = new LinkService(doc);
                 var linkedCeilingService = new LinkedCeilingService(doc, linkedService);
                 var intersactionService = new IntersectionService();

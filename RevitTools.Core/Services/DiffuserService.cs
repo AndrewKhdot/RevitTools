@@ -13,10 +13,12 @@ namespace RevitTools.Core.Services
     public class DiffuserService
     {
         private readonly Document _doc;
+        private readonly MepConnectivityService _connectivity;
 
-        public DiffuserService(Document doc)
+        public DiffuserService(Document doc, MepConnectivityService connectivity)
         {
             _doc = doc;
+            _connectivity = connectivity;
         }
 
         public List<DiffuserInfo> CreateDiffuserInfoList(List<FamilyInstance> diffusers)
@@ -124,7 +126,10 @@ namespace RevitTools.Core.Services
             Connector connector = connectors.Cast<Connector>().First();
 
             // Проверяем цепочку до глубины 2
-            return IsConnectedToFlexRecursive(connector, 0);
+            return 
+            _connectivity.IsConnectedRecursive(
+                        connector, 0, el => el is FlexDuct);
+
         }
 
         private bool IsConnectedToFlexRecursive(Connector connector, int depth)
