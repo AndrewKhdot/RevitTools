@@ -53,7 +53,17 @@
     <Compile Include="ElementSelectorForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="LogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogWindowManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RevitTools.Core\RevitTools.Core.csproj">
+      <Project>{fb3e7ffe-8710-4f9a-98bd-085335f8d291}</Project>
+      <Name>RevitTools.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

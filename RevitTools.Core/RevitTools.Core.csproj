@@ -78,6 +78,7 @@
     <Compile Include="Services\LinkedCeilingService.cs" />
     <Compile Include="Services\LinkService.cs" />
     <Compile Include="Services\LoggingService.cs" />
+    <Compile Include="Services\MepConnectivityService.cs" />
     <Compile Include="Services\NumberPool.cs" />
     <Compile Include="Services\RoomService.cs" />
     <Compile Include="Services\SpaceLookupService.cs" />
@@ -93,6 +94,7 @@
   <ItemGroup>
     <Content Include="bin\Debug\RevitTools.Core.dll" />
     <Content Include="bin\Debug\RevitTools.Core.pdb" />
+    <Content Include="Config\ids.txt" />
     <Content Include="obj\Debug\RevitTools.Core.csproj.FileListAbsolute.txt" />
     <Content Include="obj\Debug\RevitTools.Core.dll" />
     <Content Include="obj\Debug\RevitTools.Core.pdb" />
