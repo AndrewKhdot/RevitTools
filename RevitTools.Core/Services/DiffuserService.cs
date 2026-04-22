@@ -15,10 +15,14 @@ namespace RevitTools.Core.Services
         private readonly Document _doc;
         private readonly MepConnectivityService _connectivity;
 
-        public DiffuserService(Document doc, MepConnectivityService connectivity)
+        private readonly DuctAccessoryInfoService _infoservice;
+
+        public DiffuserService(Document doc, MepConnectivityService connectivity, DuctAccessoryInfoService infoservice)
         {
             _doc = doc;
             _connectivity = connectivity;
+            _infoservice = infoservice;
+
         }
 
         public List<DiffuserInfo> CreateDiffuserInfoList(List<FamilyInstance> diffusers)
@@ -79,10 +83,17 @@ namespace RevitTools.Core.Services
             return new DiffuserInfo(diffuser.Id, box, levelId, levelZ);
         }
 
-        public void ExpandBoundingBoxes(List<DiffuserInfo> diffusers, double offsetFeet = 3.28084)
+        public void ExpandBoundingBoxes(List<DiffuserInfo> diffusers, double verticalOffsetFeet = 3.28084 )
         {
             if (diffusers == null)
                 return;
+
+            // 500 mm / 2
+            double halfXY =
+                UnitUtils.ConvertToInternalUnits(
+                    250.0,
+                    DisplayUnitType.DUT_MILLIMETERS
+                );
 
             foreach (var info in diffusers)
             {
@@ -92,8 +103,22 @@ namespace RevitTools.Core.Services
                 var min = info.Box.Min;
                 var max = info.Box.Max;
 
-                info.Box.Min = new XYZ(min.X, min.Y, min.Z - offsetFeet);
-                info.Box.Max = new XYZ(max.X, max.Y, max.Z + offsetFeet);
+                // 🔹 Центр бокса
+                double centerX = (min.X + max.X) / 2.0;
+                double centerY = (min.Y + max.Y) / 2.0;
+
+                // 🔹 Новый bounding box
+                info.Box.Min = new XYZ(
+                    centerX - halfXY,
+                    centerY - halfXY,
+                    min.Z - verticalOffsetFeet
+                );
+
+                info.Box.Max = new XYZ(
+                    centerX + halfXY,
+                    centerY + halfXY,
+                    max.Z + verticalOffsetFeet
+                );
             }
         }
 
@@ -128,9 +153,72 @@ namespace RevitTools.Core.Services
             // Проверяем цепочку до глубины 2
             return 
             _connectivity.IsConnectedRecursive(
-                        connector, 0, el => el is FlexDuct);
+                        connector, 0, 2, el => el is FlexDuct);
 
         }
+
+        
+        public bool IsBalancingDevice(FamilyInstance diffuser)
+        {
+            var mepModel = diffuser.MEPModel;
+            if (mepModel == null)
+                return false;
+            double flow = 0;
+            TryGetDiffuserAirFlow(diffuser, out  flow);
+
+            ConnectorSet connectors = mepModel.ConnectorManager.Connectors;
+
+            // Должен быть ровно один коннектор
+            if (connectors.Size != 1)
+                return false;
+
+            Connector connector = connectors.Cast<Connector>().First();
+
+            // Проверяем цепочку до глубины 10
+            return 
+            _connectivity.IsConnectedRecursive(
+                        connector, 0, 10, el => el is FlexDuct);
+        }
+
+
+
+        public bool TryGetDiffuserAirFlow(
+            FamilyInstance diffuser,
+            out double flowM3h
+        )
+        {
+            flowM3h = 0;
+
+            if (diffuser?.MEPModel?.ConnectorManager == null)
+                return false;
+
+            var conn = diffuser.MEPModel.ConnectorManager.Connectors
+                .Cast<Connector>()
+                .FirstOrDefault(c =>
+                    c.Domain == Domain.DomainHvac &&
+                    Math.Abs(c.Flow) > 1e-9
+                );
+
+            if (conn == null)
+                return false;
+
+            double flowInternal = conn.Flow; // ft³/s
+
+            if (flowInternal <= 0)
+                return false;
+
+            // ft³/s → m³/h
+            double flowM3s =
+                UnitUtils.ConvertFromInternalUnits(
+                    flowInternal,
+                    DisplayUnitType.DUT_CUBIC_METERS_PER_SECOND
+                );
+
+            flowM3h = flowM3s * 3600.0;
+
+            return true;
+        }
+
 
         private bool IsConnectedToFlexRecursive(Connector connector, int depth)
         {
@@ -193,6 +281,67 @@ namespace RevitTools.Core.Services
             return filterdDiffusers;
 
         }
+
+        public bool IsHaveADumper (Element el, double flow)
+        {
+
+            return true;
+        }
+
+        public ConnectivityCheckResult CheckBalancingPathElement(
+            Element element,
+            double diffuserFlowM3h
+        )
+        {
+            // --- 1️⃣ Воздуховод ---
+            if (element is Duct duct)
+            {
+                var shape = _connectivity.GetDuctShape(duct);
+
+                // ❌ Прямоугольный воздуховод недопустим
+                if (_connectivity.GetDuctShape(duct) != 0 )
+                    return ConnectivityCheckResult.Fail;
+
+                // ✅ Круглый воздуховод → проверяем расход
+        
+                if (_connectivity.TryGetAirFlow(duct, out double ductFlowM3h))
+                {
+                    const double tolerance = 1.0; // м³/ч
+
+                    if (Math.Abs(ductFlowM3h - diffuserFlowM3h) > tolerance)
+                        return ConnectivityCheckResult.Fail;
+                }
+                
+
+                return ConnectivityCheckResult.Continue;
+            }
+
+            // --- 2️⃣ Балансировочный клапан ---
+            if (_infoservice.)
+            {
+                return ConnectivityCheckResult.Success;
+            }
+
+            // --- 3️⃣ Воздухораспределитель / Mechanical Equipment ---
+            if (element is FamilyInstance fi &&
+                fi.Category != null &&
+                fi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment)
+            {
+                return ConnectivityCheckResult.Fail;
+            }
+
+            // --- 4️⃣ Всё остальное ---
+            return ConnectivityCheckResult.Continue;
+        }
+
+        
+        public enum ConnectivityCheckResult
+        {
+            Continue,   // идём дальше по системе
+            Success,    // нашли корректный балансировочный клапан
+            Fail        // путь недопустим
+        }
+
 
     }
 }
