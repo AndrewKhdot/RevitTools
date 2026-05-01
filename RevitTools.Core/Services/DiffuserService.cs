@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.UI;
 using RevitTools.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,13 @@ namespace RevitTools.Core.Services
         private readonly Document _doc;
         private readonly MepConnectivityService _connectivity;
 
-        private readonly DuctAccessoryInfoService _infoservice;
+        private readonly EquipmentIdentifier _identifier;
 
-        public DiffuserService(Document doc, MepConnectivityService connectivity, DuctAccessoryInfoService infoservice)
+        public DiffuserService(Document doc, MepConnectivityService connectivity, EquipmentIdentifier identifier)
         {
             _doc = doc;
             _connectivity = connectivity;
-            _infoservice = infoservice;
+            _identifier = identifier;
 
         }
 
@@ -315,9 +316,17 @@ namespace RevitTools.Core.Services
 
                 return ConnectivityCheckResult.Continue;
             }
+            var type = _doc.GetElement(element.GetTypeId()) as Element;
+            string code = "";
+            if (type != null)
+            {
+
+                var modelParam = type.LookupParameter("MC Product Code");
+                code = modelParam?.AsString() ?? "";
+            }
 
             // --- 2️⃣ Балансировочный клапан ---
-            if (_infoservice.)
+            if (_identifier.IsBalancingDamper(code))
             {
                 return ConnectivityCheckResult.Success;
             }
