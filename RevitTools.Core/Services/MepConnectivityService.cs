@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static RevitTools.Core.Services.DiffuserService;
 
 namespace RevitTools.Core.Services
 {
@@ -97,7 +98,60 @@ namespace RevitTools.Core.Services
             return false;
         }
 
-       private IEnumerable<Connector> GetConnectors(Element el)
+        public ConnectivityCheckResult IsConnectedRecursive(
+            Connector connector,
+            int currentDepth,
+            int maxDepth,
+            Func<Element, ConnectivityCheckResult> check
+        )
+        {
+            if (currentDepth > maxDepth)
+                return ConnectivityCheckResult.Continue;
+
+            foreach (Connector refConn in connector.AllRefs)
+            {
+                Element owner = refConn.Owner;
+                if (owner == null)
+                    continue;
+
+                // Выполняем проверку элемента
+                var result = check(owner);
+
+                if (result == ConnectivityCheckResult.Success)
+                    return ConnectivityCheckResult.Success;
+
+                if (result == ConnectivityCheckResult.Fail)
+                    return ConnectivityCheckResult.Fail;
+
+                // Если Continue → продолжаем рекурсию
+                if (owner is MEPCurve || owner is FamilyInstance)
+                {
+                    foreach (var next in GetConnectors(owner))
+                    {
+                        if (!ReferenceEquals(next, refConn))
+                        {
+                            var recursive = IsConnectedRecursive(
+                                next,
+                                currentDepth + 1,
+                                maxDepth,
+                                check
+                            );
+
+                            if (recursive == ConnectivityCheckResult.Success)
+                                return ConnectivityCheckResult.Success;
+
+                            if (recursive == ConnectivityCheckResult.Fail)
+                                return ConnectivityCheckResult.Fail;
+                        }
+                    }
+                }
+            }
+
+            return ConnectivityCheckResult.Continue;
+        }
+
+
+        private IEnumerable<Connector> GetConnectors(Element el)
         {
             if (el is MEPCurve curve)
                 return curve.ConnectorManager.Connectors.Cast<Connector>();

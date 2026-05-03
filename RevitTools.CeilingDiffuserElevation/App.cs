@@ -27,7 +27,15 @@ namespace RevitTools.CeilingDiffuserElevation
                     "RevitTools.CeilingDiffuserElevation.CeilingDiffuserElevationCommand"
                 );
 
+                PushButtonData blcheckBtn = new PushButtonData(
+                    "BalancingDamperCheck",
+                    "Sprawdzenie regulatora",
+                    assemblyPath,
+                    "RevitTools.CeilingDiffuserElevation.IsDiffuserHasARegulatorCommand"
+                );
+
                 panel.AddItem(difBtn);
+                panel.AddItem(blcheckBtn);
 
 
                 return Result.Succeeded;

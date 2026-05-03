@@ -18,6 +18,8 @@ namespace RevitTools.Core.Models
 
         public bool WillBeChanged { get; set; } = false;
 
+        public string SpaceName { get; set; } = "";
+
         public DiffuserInfo(ElementId id, BoundingBoxXYZ box, ElementId levelId, double levelZ)
         {
             Id = id;

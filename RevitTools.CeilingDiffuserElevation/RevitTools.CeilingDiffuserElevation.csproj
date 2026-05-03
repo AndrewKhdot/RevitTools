@@ -50,6 +50,7 @@
     <Compile Include="App.cs" />
     <Compile Include="CeilingDiffuserElevationCommand.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="IsDiffuserHasARegulatorCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

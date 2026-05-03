@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace RevitTools.Core.Services
 {
@@ -159,12 +160,13 @@ namespace RevitTools.Core.Services
         }
 
         
-        public bool IsBalancingDevice(FamilyInstance diffuser)
+        public bool IsBalancingDeviceMyTry(FamilyInstance diffuser)
         {
             var mepModel = diffuser.MEPModel;
             if (mepModel == null)
                 return false;
             double flow = 0;
+            bool hasDumper = false;
             TryGetDiffuserAirFlow(diffuser, out  flow);
 
             ConnectorSet connectors = mepModel.ConnectorManager.Connectors;
@@ -175,11 +177,48 @@ namespace RevitTools.Core.Services
 
             Connector connector = connectors.Cast<Connector>().First();
 
-            // Проверяем цепочку до глубины 10
-            return 
             _connectivity.IsConnectedRecursive(
-                        connector, 0, 10, el => el is FlexDuct);
+                       connector, 0, 10, el => IsHasADumper(el, flow, out hasDumper));
+            // Проверяем цепочку до глубины 10
+            return
+                hasDumper;
+           
         }
+
+        public bool IsBalancingDevice(FamilyInstance diffuser)
+        {
+            var mepModel = diffuser.MEPModel;
+            if (mepModel == null)
+                return false;
+            //LoggingService.Log($"Проверяем диффузор {diffuser.Id}");
+
+            if (!TryGetDiffuserAirFlow(diffuser, out double diffuserFlowM3h))
+                return false;
+
+            var connectors = mepModel.ConnectorManager.Connectors;
+            if (connectors.Size != 1)
+                return false;
+
+            var connector = connectors.Cast<Connector>().First();
+
+            var result = _connectivity.IsConnectedRecursive(
+                connector,
+                0,
+                10,
+                el => CheckBalancingPathElement(el, diffuserFlowM3h)
+            );
+            if (result == ConnectivityCheckResult.Success)
+            {
+                //LoggingService.Log($"Проверка- {diffuser.Id} нашла балансировочный клапан");
+                return true;
+            }
+            else
+            {
+               // LoggingService.Log($"Проверка- {diffuser.Id} не нашла балансировочный клапан");
+                return false;
+            }   
+        }
+
 
 
 
@@ -283,10 +322,73 @@ namespace RevitTools.Core.Services
 
         }
 
-        public bool IsHaveADumper (Element el, double flow)
+        public bool IsHasADumper (Element el, double flow, out bool hasDamper)
         {
+            hasDamper = false;
+            if (el is Duct duct)
+            {
+                var shape = _connectivity.GetDuctShape(duct);
+
+                // ❌ Прямоугольный воздуховод недопустим
+                if (_connectivity.GetDuctShape(duct) != 0)
+                    return false;
+
+                // ✅ Круглый воздуховод → проверяем расход
+
+                if (_connectivity.TryGetAirFlow(duct, out double ductFlowM3h))
+                {
+                    const double tolerance = 1.0; // м³/ч
+
+                    if (Math.Abs(ductFlowM3h - flow) > tolerance)
+                        return false;
+                }
+                return true;
+            }
+            // --- 3️⃣ Воздухораспределитель / Mechanical Equipment ---
+            if (el is FamilyInstance fi)
+            {
+                //  Mechanical Equipment ---
+                if (fi.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment)
+                    return false;
+                // --- 3️⃣ Воздухораспределитель  ---
+                if (fi.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_DuctTerminal)
+                {
+                    return false;
+                }
+
+                // Балансировочный клапан или другая арматура воздуховодов ---
+                if (fi.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory)
+                {
+                    var type = _doc.GetElement(el.GetTypeId()) as Element;
+                    string code = "";
+                    if (type != null)
+                    {
+
+                        var modelParam = type.LookupParameter("MC Product Code");
+                        code = modelParam?.AsString() ?? "";
+                    }
+
+                    // --- 2️⃣ Балансировочный клапан ---
+                    if (_identifier.IsBalancingDamper(code))
+                    {
+                        hasDamper = true;
+                        return false;
+                    }
+                    // --- 4️⃣ Всё остальное ---
+                    else
+                    {
+                        return true;
+                    }
+                }    
+                    return true;
+            }
+
+
+
+
 
             return true;
+
         }
 
         public ConnectivityCheckResult CheckBalancingPathElement(
@@ -294,56 +396,74 @@ namespace RevitTools.Core.Services
             double diffuserFlowM3h
         )
         {
+            //LoggingService.Log($"Проверяем элемент {element.Id}");
             // --- 1️⃣ Воздуховод ---
-            if (element is Duct duct)
-            {
-                var shape = _connectivity.GetDuctShape(duct);
+            if (element is Duct duct)            {
+                
+                int shape = _connectivity.GetDuctShape(duct);
 
                 // ❌ Прямоугольный воздуховод недопустим
-                if (_connectivity.GetDuctShape(duct) != 0 )
+                if (shape != 0) // 0 = круглый
+                {
+                    //LoggingService.Log($"Элемент - {element.Id} не круглый воздуховод");
                     return ConnectivityCheckResult.Fail;
+                }
 
-                // ✅ Круглый воздуховод → проверяем расход
-        
+                // Проверка расхода
                 if (_connectivity.TryGetAirFlow(duct, out double ductFlowM3h))
                 {
-                    const double tolerance = 1.0; // м³/ч
-
-                    if (Math.Abs(ductFlowM3h - diffuserFlowM3h) > tolerance)
+                    //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод");
+                    if (Math.Abs(ductFlowM3h - diffuserFlowM3h) > 1.0)
+                    {
+                        //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод с отличным расходом");
                         return ConnectivityCheckResult.Fail;
+                    }
                 }
-                
-
+                //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод - продолжаем проверку");
                 return ConnectivityCheckResult.Continue;
             }
-            var type = _doc.GetElement(element.GetTypeId()) as Element;
-            string code = "";
-            if (type != null)
-            {
 
-                var modelParam = type.LookupParameter("MC Product Code");
-                code = modelParam?.AsString() ?? "";
-            }
+            // --- 2️⃣ Получаем код изделия ---
+            string code = _doc.GetElement(element.GetTypeId())?
+                .LookupParameter("MC Product Code")?
+                .AsString() ?? "";
 
-            // --- 2️⃣ Балансировочный клапан ---
+            // --- 3️⃣ Балансировочный клапан ---
             if (_identifier.IsBalancingDamper(code))
             {
+                //LoggingService.Log($"Элемент - {element.Id} балансировочный клапан");
                 return ConnectivityCheckResult.Success;
             }
-
-            // --- 3️⃣ Воздухораспределитель / Mechanical Equipment ---
+            // --- 4️⃣ Воздухораспределитель ---
             if (element is FamilyInstance fi &&
-                fi.Category != null &&
-                fi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment)
+                fi.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_DuctTerminal)
             {
+                //LoggingService.Log($"Элемент - {element.Id} воздухораспределитель");
                 return ConnectivityCheckResult.Fail;
             }
-
-            // --- 4️⃣ Всё остальное ---
+            // --- 5️⃣ Mechanical Equipment ---
+            if (element is FamilyInstance fi2 &&
+                fi2.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment)
+            {
+                //LoggingService.Log($"Элемент - {element.Id} механическое оборудование");
+                return ConnectivityCheckResult.Fail;
+            }
+            // --- 6️⃣ DuctAccessory, но НЕ балансировочный клапан ---
+            if (element is FamilyInstance fi3 &&
+                fi3.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory)
+            {
+                //LoggingService.Log($"Элемент - {element.Id} любой другой элемент арматуры воздуховода");
+                // Противопожарные клапаны, датчики, переходники — всё это OK
+                // Просто продолжаем поиск
+                return ConnectivityCheckResult.Continue;
+            }
+            //LoggingService.Log($"Элемент - {element.Id} любой другой элемент системы");
+            // --- 7️⃣ Всё остальное ---
             return ConnectivityCheckResult.Continue;
         }
 
-        
+
+
         public enum ConnectivityCheckResult
         {
             Continue,   // идём дальше по системе

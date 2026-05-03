@@ -7,7 +7,9 @@ using RevitTools.Core.Services;
 using RevitTools.UI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace RevitTools.CeilingDiffuserElevation
 {
@@ -31,8 +33,13 @@ namespace RevitTools.CeilingDiffuserElevation
                 // highlightService.Pause();
                 // LoggingService.Log("Plugin execution started.");
                 // highlightService.Pause();
+                string pluginFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+                string jsonPath = Path.Combine(pluginFolder, "Config", "EquipmentCatalog.json");
+                var config = new ConfigService(jsonPath).Load();
+                var identifier = new EquipmentIdentifier(config);
                 var connectivityService = new MepConnectivityService();
-                var diffuserService = new DiffuserService(doc, connectivityService);
+                var diffuserService = new DiffuserService(doc, connectivityService, identifier);
                 var linkedService = new LinkService(doc);
                 var linkedCeilingService = new LinkedCeilingService(doc, linkedService);
                 var intersactionService = new IntersectionService();
