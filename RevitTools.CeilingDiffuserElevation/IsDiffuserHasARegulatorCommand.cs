@@ -46,6 +46,29 @@ namespace RevitTools.CeilingDiffuserElevation
                 }
                 string needBalancerDumper = "";
 
+                using (var t = new Transaction(doc, "Update diffusers names"))
+                {
+                    t.Start();
+
+                    foreach (var info in diffuserInfos)
+                    {
+                        if (!info.WillBeChanged)
+                            continue;
+
+                        var element = doc.GetElement(info.Id);
+                        if (element == null)
+                            continue;
+
+                        var param = element.LookupParameter("Марка");
+                        if (param != null && !param.IsReadOnly)
+                        {
+                            param.Set(element.Id);
+                        }
+                    }
+
+                    t.Commit();
+                }
+
                 foreach (var item in diffuserInfos)
                 {
                     if (!item.WillBeChanged)

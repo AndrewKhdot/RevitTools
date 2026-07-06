@@ -190,7 +190,7 @@ namespace RevitTools.Core.Services
             var mepModel = diffuser.MEPModel;
             if (mepModel == null)
                 return false;
-            //LoggingService.Log($"Проверяем диффузор {diffuser.Id}");
+            LoggingService.Log($"Проверяем диффузор {diffuser.Id}");
 
             if (!TryGetDiffuserAirFlow(diffuser, out double diffuserFlowM3h))
                 return false;
@@ -209,12 +209,12 @@ namespace RevitTools.Core.Services
             );
             if (result == ConnectivityCheckResult.Success)
             {
-                //LoggingService.Log($"Проверка- {diffuser.Id} нашла балансировочный клапан");
+                LoggingService.Log($"Проверка- {diffuser.Id} нашла балансировочный клапан");
                 return true;
             }
             else
             {
-               // LoggingService.Log($"Проверка- {diffuser.Id} не нашла балансировочный клапан");
+               LoggingService.Log($"Проверка- {diffuser.Id} не нашла балансировочный клапан");
                 return false;
             }   
         }
@@ -396,7 +396,7 @@ namespace RevitTools.Core.Services
             double diffuserFlowM3h
         )
         {
-            //LoggingService.Log($"Проверяем элемент {element.Id}");
+           //LoggingService.Log($"Проверяем элемент {element.Id}");
             // --- 1️⃣ Воздуховод ---
             if (element is Duct duct)            {
                 
@@ -419,7 +419,7 @@ namespace RevitTools.Core.Services
                         return ConnectivityCheckResult.Fail;
                     }
                 }
-                //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод - продолжаем проверку");
+                LoggingService.Log($"Элемент - {element.Id} круглый воздуховод - продолжаем проверку");
                 return ConnectivityCheckResult.Continue;
             }
 

@@ -102,9 +102,13 @@ namespace RevitTools.Core.Services
             Connector connector,
             int currentDepth,
             int maxDepth,
-            Func<Element, ConnectivityCheckResult> check
+            Func<Element, ConnectivityCheckResult> check,
+            HashSet<ElementId> visited = null
         )
         {
+            if (visited == null)
+                visited = new HashSet<ElementId>();
+
             if (currentDepth > maxDepth)
                 return ConnectivityCheckResult.Continue;
 
@@ -114,8 +118,15 @@ namespace RevitTools.Core.Services
                 if (owner == null)
                     continue;
 
+                // ❌ Исключаем "Систему воздуховодов"
+                if (owner is MEPSystem || owner is MechanicalSystem)
+                    continue;
+
                 // Выполняем проверку элемента
                 var result = check(owner);
+                // проверка на посещённость
+                if (visited.Contains(owner.Id))
+                    continue;
 
                 if (result == ConnectivityCheckResult.Success)
                     return ConnectivityCheckResult.Success;
@@ -134,7 +145,8 @@ namespace RevitTools.Core.Services
                                 next,
                                 currentDepth + 1,
                                 maxDepth,
-                                check
+                                check,
+                                visited
                             );
 
                             if (recursive == ConnectivityCheckResult.Success)
