@@ -396,7 +396,7 @@ namespace RevitTools.Core.Services
             double diffuserFlowM3h
         )
         {
-           //LoggingService.Log($"Проверяем элемент {element.Id}");
+           LoggingService.Log($"Проверяем элемент {element.Id}");
             // --- 1️⃣ Воздуховод ---
             if (element is Duct duct)            {
                 
@@ -405,17 +405,17 @@ namespace RevitTools.Core.Services
                 // ❌ Прямоугольный воздуховод недопустим
                 if (shape != 0) // 0 = круглый
                 {
-                    //LoggingService.Log($"Элемент - {element.Id} не круглый воздуховод");
+                    LoggingService.Log($"Элемент - {element.Id} не круглый воздуховод");
                     return ConnectivityCheckResult.Fail;
                 }
 
                 // Проверка расхода
                 if (_connectivity.TryGetAirFlow(duct, out double ductFlowM3h))
                 {
-                    //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод");
+                    LoggingService.Log($"Элемент - {element.Id} круглый воздуховод");
                     if (Math.Abs(ductFlowM3h - diffuserFlowM3h) > 1.0)
                     {
-                        //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод с отличным расходом");
+                        LoggingService.Log($"Элемент - {element.Id} круглый воздуховод с отличным расходом");
                         return ConnectivityCheckResult.Fail;
                     }
                 }
@@ -431,33 +431,33 @@ namespace RevitTools.Core.Services
             // --- 3️⃣ Балансировочный клапан ---
             if (_identifier.IsBalancingDamper(code))
             {
-                //LoggingService.Log($"Элемент - {element.Id} балансировочный клапан");
+                LoggingService.Log($"Элемент - {element.Id} балансировочный клапан");
                 return ConnectivityCheckResult.Success;
             }
             // --- 4️⃣ Воздухораспределитель ---
             if (element is FamilyInstance fi &&
                 fi.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_DuctTerminal)
             {
-                //LoggingService.Log($"Элемент - {element.Id} воздухораспределитель");
+                LoggingService.Log($"Элемент - {element.Id} воздухораспределитель");
                 return ConnectivityCheckResult.Fail;
             }
             // --- 5️⃣ Mechanical Equipment ---
             if (element is FamilyInstance fi2 &&
                 fi2.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_MechanicalEquipment)
             {
-                //LoggingService.Log($"Элемент - {element.Id} механическое оборудование");
+                LoggingService.Log($"Элемент - {element.Id} механическое оборудование");
                 return ConnectivityCheckResult.Fail;
             }
             // --- 6️⃣ DuctAccessory, но НЕ балансировочный клапан ---
             if (element is FamilyInstance fi3 &&
                 fi3.Category?.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory)
             {
-                //LoggingService.Log($"Элемент - {element.Id} любой другой элемент арматуры воздуховода");
+                LoggingService.Log($"Элемент - {element.Id} любой другой элемент арматуры воздуховода");
                 // Противопожарные клапаны, датчики, переходники — всё это OK
                 // Просто продолжаем поиск
                 return ConnectivityCheckResult.Continue;
             }
-            //LoggingService.Log($"Элемент - {element.Id} любой другой элемент системы");
+            LoggingService.Log($"Элемент - {element.Id} любой другой элемент системы");
             // --- 7️⃣ Всё остальное ---
             return ConnectivityCheckResult.Continue;
         }

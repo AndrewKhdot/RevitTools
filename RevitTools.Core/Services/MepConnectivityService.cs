@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static RevitTools.Core.Services.DiffuserService;
 
 namespace RevitTools.Core.Services
@@ -107,7 +108,14 @@ namespace RevitTools.Core.Services
         )
         {
             if (visited == null)
+            {
                 visited = new HashSet<ElementId>();
+                Element owner = connector.Owner;
+                if (owner != null)                         
+                    visited.Add(owner.Id);
+            }
+
+                
 
             if (currentDepth > maxDepth)
                 return ConnectivityCheckResult.Continue;
@@ -120,13 +128,21 @@ namespace RevitTools.Core.Services
 
                 // ❌ Исключаем "Систему воздуховодов"
                 if (owner is MEPSystem || owner is MechanicalSystem)
+                {
+                    LoggingService.Log($"Система воздуховодов {refConn.Id}");
                     continue;
+                }
+                // проверка на посещённость
+                if (visited.Contains(owner.Id))
+                {
+                    LoggingService.Log($"Коннектор уже проверен {refConn.Id}");
+                    continue;
+                }
+                visited.Add(owner.Id);
 
                 // Выполняем проверку элемента
                 var result = check(owner);
-                // проверка на посещённость
-                if (visited.Contains(owner.Id))
-                    continue;
+
 
                 if (result == ConnectivityCheckResult.Success)
                     return ConnectivityCheckResult.Success;
