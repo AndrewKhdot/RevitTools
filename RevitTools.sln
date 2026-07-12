@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTools.DuctAccessoryAnn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTools.CeilingDiffuserElevation", "RevitTools.CeilingDiffuserElevation\RevitTools.CeilingDiffuserElevation.csproj", "{6DC73FC3-5673-47B4-8B6E-57F77A65A110}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiffuserDamperAssistant", "DiffuserDamperAssistant\DiffuserDamperAssistant.csproj", "{F2574E1D-D8CF-4FFC-85B1-3782E163813E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{6DC73FC3-5673-47B4-8B6E-57F77A65A110}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DC73FC3-5673-47B4-8B6E-57F77A65A110}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DC73FC3-5673-47B4-8B6E-57F77A65A110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2574E1D-D8CF-4FFC-85B1-3782E163813E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2574E1D-D8CF-4FFC-85B1-3782E163813E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2574E1D-D8CF-4FFC-85B1-3782E163813E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2574E1D-D8CF-4FFC-85B1-3782E163813E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

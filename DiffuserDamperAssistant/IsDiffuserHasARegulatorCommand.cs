@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace RevitTools.CeilingDiffuserElevation
+namespace RevitTools.DiffuserDamperAssistant
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     public class IsDiffuserHasARegulatorCommand : IExternalCommand
