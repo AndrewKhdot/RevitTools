@@ -58,6 +58,7 @@
     <Compile Include="Helpers\ParameterHelper.cs" />
     <Compile Include="Helpers\SpatialHelper.cs" />
     <Compile Include="Models\CeilingInfo.cs" />
+    <Compile Include="Models\CirclDuctsList.cs" />
     <Compile Include="Models\DiffuserInfo.cs" />
     <Compile Include="Models\RoomInfo.cs" />
     <Compile Include="Models\SystemElements.cs" />

@@ -129,13 +129,13 @@ namespace RevitTools.Core.Services
                 // ❌ Исключаем "Систему воздуховодов"
                 if (owner is MEPSystem || owner is MechanicalSystem)
                 {
-                    LoggingService.Log($"Система воздуховодов {refConn.Id}");
+                    //LoggingService.Log($"Система воздуховодов {refConn.Id}");
                     continue;
                 }
                 // проверка на посещённость
                 if (visited.Contains(owner.Id))
                 {
-                    LoggingService.Log($"Коннектор уже проверен {refConn.Id}");
+                    //LoggingService.Log($"Коннектор уже проверен {refConn.Id}");
                     continue;
                 }
                 visited.Add(owner.Id);
