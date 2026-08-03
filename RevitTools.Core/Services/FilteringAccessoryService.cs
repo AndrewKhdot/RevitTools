@@ -54,6 +54,25 @@ namespace RevitTools.Revit.Services
             return result;
         }
 
+        public List<FamilySymbol> FilterBalancingDamperSymbols(List<FamilySymbol> symbols)
+        {
+            var result = new List<FamilySymbol>();
+
+            foreach (var symbol in symbols)
+            {
+                if (symbol == null) continue;
+
+                var modelParam = symbol.LookupParameter("MC Product Code");
+                string code = modelParam?.AsString() ?? "";
+
+                if (_identifier.IsBalancingDamper(code))
+                    result.Add(symbol);
+            }
+
+            return result;
+        }
+
+
         public List<FamilyInstance> FilterSilencers(List<FamilyInstance> accessories)
         {
             var result = new List<FamilyInstance>();

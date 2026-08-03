@@ -33,7 +33,30 @@ namespace RevitTools.Core.Services
         public FamilyInstance GetAccessory(ElementId id)
         {
             return _doc.GetElement(id) as FamilyInstance;
-        }        
+        }
+
+        public List<Family> GetFamilyAccessories()
+        {
+            var families = new FilteredElementCollector(_doc)
+             .OfClass(typeof(Family))
+             .Cast<Family>()
+             .Where(f => f.FamilyCategory != null &&
+                         f.FamilyCategory.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory)
+             .ToList();
+
+            return families;
+        }
+
+        public List<FamilySymbol> GetDuctAccessoryFamilySymbols()
+        {
+            return new FilteredElementCollector(_doc)
+                .OfClass(typeof(FamilySymbol))
+                .Cast<FamilySymbol>()
+                .Where(s => s.Category != null &&
+                            s.Category.Id.IntegerValue == (int)BuiltInCategory.OST_DuctAccessory)
+                .ToList();
+        }
+
 
     }
 }

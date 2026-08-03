@@ -38,6 +38,32 @@ namespace RevitTools.Core.Services
             return annotationSize;
         }
 
+        public string GetAccessoryConSize(FamilySymbol symbol)
+        {
+            if (symbol == null)
+                return null;
+
+            // Magicad: круглые аксессуары имеют параметр MC_R1 (радиус в футах)
+            var radiusParam = symbol.LookupParameter("MC_R1");
+            if (radiusParam == null)
+                return null; // прямоугольные или некорректные → игнорируем
+
+            double radiusFt = radiusParam.AsDouble();
+            if (radiusFt <= 0)
+                return null;
+
+            // Диаметр = 2 * радиус
+            double diameterFt = radiusFt * 2;
+
+            // Переводим в мм
+            int diameterMm = RoundMm(diameterFt);
+
+            // Возвращаем без значка ⌀
+            return $"{diameterMm}";
+        }
+
+
+
         public string GetSilenserSize(FamilyInstance silenser)
         {
             string annotationSize = "";
