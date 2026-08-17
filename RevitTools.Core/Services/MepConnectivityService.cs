@@ -178,6 +178,167 @@ namespace RevitTools.Core.Services
             return ConnectivityCheckResult.Continue;
         }
 
+        public bool IsHaveDuctForDumperRecursive(
+            Connector connector,
+            int currentDepth,
+            int maxDepth,
+            HashSet<ElementId> ductIds,
+            Func<Element,double, bool> check,
+            HashSet<ElementId> visited = null
+        )
+        {
+            if (visited == null)
+            {
+                visited = new HashSet<ElementId>();
+                Element owner = connector.Owner;
+                if (owner != null)
+                    visited.Add(owner.Id);
+            }
+
+            if (ductIds == null)
+            {
+                ductIds = new HashSet<ElementId>();               
+            }
+
+            if (currentDepth > maxDepth)
+                return false;
+
+            foreach (Connector refConn in connector.AllRefs)
+            {
+                Element owner = refConn.Owner;
+                if (owner == null)
+                    continue;
+
+                // ❌ Исключаем "Систему воздуховодов"
+                if (owner is MEPSystem || owner is MechanicalSystem)
+                {
+                    //LoggingService.Log($"Система воздуховодов {refConn.Id}");
+                    continue;
+                }
+                // проверка на посещённость
+                if (visited.Contains(owner.Id))
+                {
+                    //LoggingService.Log($"Коннектор уже проверен {refConn.Id}");
+                    continue;
+                }
+                visited.Add(owner.Id);
+
+                // Выполняем проверку элемента
+                var result = check(owner);
+
+
+                if (result == ConnectivityCheckResult.Success)
+                    return ConnectivityCheckResult.Success;
+
+                if (result == ConnectivityCheckResult.Fail)
+                    return ConnectivityCheckResult.Fail;
+
+                // Если Continue → продолжаем рекурсию
+                if (owner is MEPCurve || owner is FamilyInstance)
+                {
+                    foreach (var next in GetConnectors(owner))
+                    {
+                        if (!ReferenceEquals(next, refConn))
+                        {
+                            var recursive = IsConnectedRecursive(
+                                next,
+                                currentDepth + 1,
+                                maxDepth,
+                                check,
+                                visited
+                            );
+
+                            if (recursive == ConnectivityCheckResult.Success)
+                                return ConnectivityCheckResult.Success;
+
+                            if (recursive == ConnectivityCheckResult.Fail)
+                                return ConnectivityCheckResult.Fail;
+                        }
+                    }
+                }
+            }
+
+            return ConnectivityCheckResult.Continue;
+        }
+
+        public bool FindCircleDucts(
+            Connector connector,
+            int currentDepth,
+            int maxDepth,
+            Func<Element, ConnectivityCheckResult> check,
+            HashSet<ElementId> visited = null
+        )
+        {
+            if (visited == null)
+            {
+                visited = new HashSet<ElementId>();
+                Element owner = connector.Owner;
+                if (owner != null)
+                    visited.Add(owner.Id);
+            }
+
+
+
+            if (currentDepth > maxDepth)
+                return false;
+
+            foreach (Connector refConn in connector.AllRefs)
+            {
+                Element owner = refConn.Owner;
+                if (owner == null)
+                    continue;
+
+                // ❌ Исключаем "Систему воздуховодов"
+                if (owner is MEPSystem || owner is MechanicalSystem)
+                {
+                    //LoggingService.Log($"Система воздуховодов {refConn.Id}");
+                    continue;
+                }
+                // проверка на посещённость
+                if (visited.Contains(owner.Id))
+                {
+                    //LoggingService.Log($"Коннектор уже проверен {refConn.Id}");
+                    continue;
+                }
+                visited.Add(owner.Id);
+
+                // Выполняем проверку элемента
+                var result = check(owner);
+
+
+                if (result == ConnectivityCheckResult.Success)
+                    return ConnectivityCheckResult.Success;
+
+                if (result == ConnectivityCheckResult.Fail)
+                    return ConnectivityCheckResult.Fail;
+
+                // Если Continue → продолжаем рекурсию
+                if (owner is MEPCurve || owner is FamilyInstance)
+                {
+                    foreach (var next in GetConnectors(owner))
+                    {
+                        if (!ReferenceEquals(next, refConn))
+                        {
+                            var recursive = IsConnectedRecursive(
+                                next,
+                                currentDepth + 1,
+                                maxDepth,
+                                check,
+                                visited
+                            );
+
+                            if (recursive == ConnectivityCheckResult.Success)
+                                return ConnectivityCheckResult.Success;
+
+                            if (recursive == ConnectivityCheckResult.Fail)
+                                return ConnectivityCheckResult.Fail;
+                        }
+                    }
+                }
+            }
+
+            return ConnectivityCheckResult.Continue;
+        }
 
         private IEnumerable<Connector> GetConnectors(Element el)
         {
