@@ -185,9 +185,11 @@ namespace RevitTools.Core.Services
            
         }
 
-        public bool IsBalancingDevice(FamilyInstance diffuser)
+        public bool IsBalancingDevice(DiffuserInfo diffuserInfo)
         {
-            var mepModel = diffuser.MEPModel;
+            diffuserInfo.DuctsForDampers.Clear();
+            var diffuser = GetDiffuser(diffuserInfo.Id);
+            var mepModel = diffuser?.MEPModel;
             if (mepModel == null)
                 return false;
             //LoggingService.Log($"Проверяем диффузор {diffuser.Id}");
@@ -205,7 +207,7 @@ namespace RevitTools.Core.Services
                 connector,
                 0,
                 10,
-                el => CheckBalancingPathElement(el, diffuserFlowM3h)
+                el => CheckBalancingPathElement(el, diffuserFlowM3h, diffuserInfo)
             );
             if (result == ConnectivityCheckResult.Success)
             {
@@ -393,7 +395,8 @@ namespace RevitTools.Core.Services
 
         public ConnectivityCheckResult CheckBalancingPathElement(
             Element element,
-            double diffuserFlowM3h
+            double diffuserFlowM3h,
+            DiffuserInfo diffuserInfo
         )
         {
            //LoggingService.Log($"Проверяем элемент {element.Id}");
@@ -418,6 +421,8 @@ namespace RevitTools.Core.Services
                         //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод с отличным расходом");
                         return ConnectivityCheckResult.Fail;
                     }
+                    // Расход известен и совпадает → воздуховод подходит для регулятора
+                    diffuserInfo.DuctsForDampers.Add(element.Id);
                 }
                 //LoggingService.Log($"Элемент - {element.Id} круглый воздуховод - продолжаем проверку");
                 return ConnectivityCheckResult.Continue;

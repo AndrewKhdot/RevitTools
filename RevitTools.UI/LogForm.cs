@@ -62,8 +62,19 @@ namespace RevitTools.UI
             LoggingService.OnClear += ClearView;
         }
 
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            // Отписываемся, иначе закрытая форма продолжит получать логи
+            LoggingService.OnLog -= WriteLine;
+            LoggingService.OnClear -= ClearView;
+            base.OnFormClosed(e);
+        }
+
         private void WriteLine(string text)
         {
+            if (IsDisposed)
+                return;
+
             if (InvokeRequired)
             {
                 Invoke(new Action(() => WriteLine(text)));
@@ -75,6 +86,9 @@ namespace RevitTools.UI
 
         private void ClearView()
         {
+            if (IsDisposed)
+                return;
+
             if (InvokeRequired)
             {
                 Invoke(new Action(ClearView));

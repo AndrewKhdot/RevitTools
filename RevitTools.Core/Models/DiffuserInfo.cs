@@ -20,6 +20,8 @@ namespace RevitTools.Core.Models
 
         public string SpaceName { get; set; } = "";
 
+        public HashSet<ElementId> DuctsForDampers { get; set; } = new HashSet<ElementId>();
+
         public DiffuserInfo(ElementId id, BoundingBoxXYZ box, ElementId levelId, double levelZ)
         {
             Id = id;

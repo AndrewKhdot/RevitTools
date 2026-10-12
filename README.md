@@ -1,116 +1,98 @@
-Revit MEP Automation Toolkit
-A collection of tools, services, and algorithms designed to automate HVAC/MEP workflows in Autodesk Revit.  
-This solution was created to support real‑world design tasks and serves as a foundation for further development toward Autodesk Platform Services (APS).
+# RevitTools
 
----
+A set of Revit add-ins for HVAC design work, written for the tasks I kept doing by hand on real projects: numbering duct accessories, setting diffuser elevations under suspended ceilings, and checking that every air terminal has a balancing damper.
 
-🎯 Purpose of the Project
-This repository contains a set of Revit plugins and backend services that:
+The tools are built around MagiCAD families and one office's conventions. They are not a general-purpose library; see [Limitations](#limitations).
 
-- automate MEP system analysis,  
-- detect modeling and design issues,  
-- support HVAC designers in daily work,  
-- visualize MEP data directly in the model,  
-- prepare logic and data structures for future APS/ACC/BIM360 integrations.
+## Commands
 
-All tools were developed based on real project needs in the HVAC/MEP domain.
+| Command | Ribbon button | What it does |
+| --- | --- | --- |
+| `FireDampersCommand` | Accessories → Przeciwpożarowe klapy | Numbers fire dampers (keeping numbers already in use) and writes type/size and the space they sit in to their parameters. |
+| `SilencerAnnotationCommand` | Accessories → Tłumiki | Numbers silencers and writes size, length and pressure loss to their parameters. |
+| `BalancingDampersCommand` | Accessories → Przepustnicy | Writes the space number and name to each balancing damper. |
+| `CeilingDiffuserElevationCommand` | Diffusers → Wysokość nawiewników | For air terminals connected through a flex duct, finds the suspended ceiling above them in the linked architectural model and moves the terminal to that ceiling's height. Terminals with no ceiling, or more than one, are listed in the log. |
+| `IsDiffuserHasARegulatorCommand` | not on the ribbon yet | Walks the duct run from each air terminal and checks for a balancing damper. Where none is found, inserts one into the first suitable round duct of that branch. Terminals it could not fix are listed in the log. **Experimental.** |
+| `ChangeHeightCommand` | not on the ribbon yet | For rooms on the selected levels, finds the underside of the slab above and sets the room's Limit Offset to it. You confirm the rooms in a second dialog. |
 
----
+## Requirements
 
-🧩 Key Modules
+- Autodesk Revit 2019 (the projects reference the 2019 API and use `DisplayUnitType`, which was removed in Revit 2022)
+- .NET Framework 4.7.2
+- Visual Studio 2019 or later to build
+- MagiCAD families in the model — equipment is recognised by the `MC Product Code` parameter, and results are written to `MC Object Variable 1`–`4`
 
-1. ConnectivityService — MEP Connection Analysis Engine
-A robust recursive engine for traversing MEP connections:
+## Build and install
 
-- full traversal of MEP chains (Duct, Flex, Damper, Accessory, Terminal),  
-- cycle protection using a visited‑set mechanism,  
-- enum‑based logic: Success / Fail / Continue,  
-- detection of invalid or broken paths,  
-- support for Fire Dampers, Duct Accessories, Mechanical Equipment, Terminals.
+1. Open `RevitTools.sln` and build. The Revit API references point to `C:\Program Files\Autodesk\Revit 2019\`; adjust the hint paths if Revit is installed elsewhere.
+2. Copy the output of the add-in project you need (its DLL, `RevitTools.Core.dll`, `RevitTools.UI.dll`, `Newtonsoft.Json.dll`) to a folder of your choice.
+3. Copy `RevitTools.Core/Config/EquipmentCatalog.json` into a `Config` subfolder next to the DLLs. The commands look for it there.
+4. Add a manifest to `%AppData%\Autodesk\Revit\Addins\2019\`. The repository does not include one; for the ribbon panels it looks like this:
 
-This is the core of the entire toolkit — modular, extendable, and reusable.
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>RevitTools Accessories</Name>
+    <Assembly>C:\path\to\RevitTools.DuctAccessoryAnnotation.dll</Assembly>
+    <FullClassName>RevitTools.DuctAccessoryAnnotation.App</FullClassName>
+    <AddInId>PUT-A-NEW-GUID-HERE</AddInId>
+    <VendorId>RevitTools</VendorId>
+  </AddIn>
+</RevitAddIns>
+```
 
----
+`RevitTools.CeilingDiffuserElevation.App` registers the Diffusers panel the same way. The two commands without a ribbon button can be registered with `Type="Command"` or run through Add-In Manager.
 
-2. Diffuser Regulator Checker
-A tool for automatically detecting whether a diffuser is connected to a proper balancing damper.
+## Configuration
 
-Features:
+`EquipmentCatalog.json` maps product-code prefixes to equipment kinds, separately for round and rectangular parts:
 
-- airflow extraction and validation,  
-- recursive traversal of the MEP chain until a regulator is found,  
-- handling of Fire Dampers, transitions, flex ducts, tees, and accessories,  
-- detection of design inconsistencies.
+```json
+"BalancingDampers": {
+  "Circle": [ "PTS" ],
+  "Rect":   [ "UTT/R" ],
+  "Other":  []
+}
+```
 
----
+To support another product line, add its code prefix to the right list. No rebuild is needed.
 
-3. HighlightService — Visual Debugging
-A visualization module for Revit:
+## How it is organised
 
-- DirectShape‑based highlighting,  
-- visual representation of MEP chains,  
-- useful for debugging and demonstrating plugin logic.
+| Project | Contents |
+| --- | --- |
+| `RevitTools.Core` | Services and models shared by all commands: collecting and filtering accessories, numbering, space lookup, duct-run traversal, ceiling intersection. |
+| `RevitTools.UI` | WinForms log window and the element picker dialog. |
+| `RevitTools.DuctAccessoryAnnotation` | Fire damper, silencer and balancing damper commands, plus their ribbon panel. |
+| `RevitTools.CeilingDiffuserElevation` | Diffuser elevation command and the Diffusers ribbon panel. |
+| `RevitTools.DiffuserDamperAssistant` | Balancing damper check and placement. |
+| `RevitTools.ChangeHeight` | Room height command. |
 
----
+The duct-run traversal (`MepConnectivityService.IsConnectedRecursive`) is a depth-first walk over connectors with a visited set. The caller supplies a callback that returns `Success`, `Fail` or `Continue` for each element, so the same walk serves different checks.
 
-4. LoggingService + UI
-A lightweight WinForms‑based logging interface:
+Logs go to the log window and to `%LocalAppData%\RevitTools\Logs\plugin.log`.
 
-- real‑time logging of analysis steps,  
-- safe cross‑thread UI updates (Invoke/BeginInvoke),  
-- protection against ObjectDisposedException,  
-- helpful for debugging complex recursive logic.
+## Limitations
 
----
+- **MagiCAD only.** Equipment is identified by MagiCAD parameters and product codes. Native Revit families or other manufacturers' content will not be recognised.
+- **Revit 2019 only.** Later versions need the unit API calls migrated.
+- **Traversal depth is 10 elements.** A damper further than that from the terminal is treated as missing.
+- **Damper placement is new.** It handles round ducts in sizes 100, 125, 160, 200 and 250, places the damper at the middle of the duct, and does not set its rotation around the duct axis. Check the result before relying on it.
+- **Mixed languages.** Ribbon captions and written parameter values are in Polish, log messages in English and Russian.
+- **No automated tests.** Everything is checked by hand in Revit.
 
-🏗 Architecture Overview
-The solution follows a clean, modular architecture:
+## Roadmap
 
-- Core — business logic, algorithms, services, enums  
-- UI — logging windows, user interaction  
-- Commands — Revit external commands  
-- Services — connectivity, identification, visualization, airflow analysis  
+- Level selection for the damper check
+- Ribbon buttons for the remaining commands
+- Support for Revit 2022+
+- Longer term: trying the same checks against Autodesk Platform Services
 
-The architecture is designed for clarity, maintainability, and future expansion.
+## License
 
----
+MIT — see [LICENSE.txt](LICENSE.txt).
 
-🛠 Technologies
-- C# / .NET  
-- Revit API  
-- WinForms (UI)  
-- DirectShape visualization  
-- Recursive graph algorithms  
-- Enum‑driven state logic
+## Author
 
----
-
-📌 Use Cases
-- automated validation of HVAC system correctness,  
-- detection of missing balancing dampers,  
-- MEP chain traversal in large models,  
-- visualization of airflow paths and system structure,  
-- preparing logic for APS‑based cloud integrations.
-
----
-
-📈 Roadmap
-This repository will be gradually split into smaller, focused projects:
-
-- MEP Connectivity Toolkit  
-- Diffuser Regulator Checker  
-- HighlightService Demo  
-- Revit API Utilities Library
-
-Future additions:
-
-- usage examples,  
-- documentation,  
-- APS/ACC/BIM360 integration prototypes.
-
----
-
-👤 Author
-Andrei Khadatchuk 
-HVAC Design Assistant / BIM Automation Developer  
-Building tools that support MEP designers and preparing for APS‑based development.
+Andrei Khadatchuk — HVAC design assistant, writing Revit automation for MEP work.

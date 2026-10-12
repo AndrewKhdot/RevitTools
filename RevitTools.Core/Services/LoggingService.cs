@@ -32,6 +32,7 @@ namespace RevitTools.Core.Services
 
             lock (_lock)
             {
+                Directory.CreateDirectory(LogDirectory);
                 File.AppendAllText(LogFilePath, line + Environment.NewLine);
             }
             OnLog?.Invoke(line);
